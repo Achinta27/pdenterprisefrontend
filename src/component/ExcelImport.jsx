@@ -74,7 +74,9 @@ const ExcelImport = ({ onImportSuccess, onDuplicateFound }) => {
       {/* Upload Button */}
       <label
         htmlFor="fileUpload"
-        className={`form-submit font-semibold ${loading ? "opacity-50" : ""}`}
+        className={`text-black w-fit bg-[#EEEEEE] text-sm  px-4 py-2 rounded-md shadow-custom font-semibold ${
+          loading ? "opacity-50" : ""
+        }`}
       >
         {loading ? "Uploading..." : "Import Excel"}
       </label>

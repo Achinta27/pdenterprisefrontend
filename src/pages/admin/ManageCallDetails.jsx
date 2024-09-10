@@ -460,18 +460,21 @@ const ManageCallDetails = () => {
 
   return (
     <AdminDashboardTemplate>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-wrap gap-4 border-b border-[#cccccc] pb-8">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-4 border-b border-[#cccccc] pb-4">
           <ExcelImport
             onImportSuccess={handleImportSuccess}
             onDuplicateFound={handleDuplicateFound}
           />
-          <Link to={`/admin/add-calldetails`} className="form-submit">
+          <Link
+            to={`/admin/add-calldetails`}
+            className="text-black w-fit bg-[#EEEEEE] flex justify-center items-center text-sm font-medium px-4 py-1 rounded-md shadow-custom"
+          >
             Add Call
           </Link>
           <button
             onClick={handleEngineerFilterClick}
-            className={`text-black w-fit font-medium px-4 py-2 rounded-md shadow-custom ${
+            className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
               isEngineerFilterActive ? "bg-blue-500 text-white" : "bg-[#EEEEEE]"
             }`}
           >
@@ -479,7 +482,7 @@ const ManageCallDetails = () => {
           </button>
           <button
             onClick={handleFollowUpClick}
-            className={`text-black w-fit font-medium px-4 py-2 rounded-md shadow-custom ${
+            className={`text-black w-fit font-medium text-wm px-4 py-1 rounded-md shadow-custom ${
               jobStatusFilter === "FollowUp"
                 ? "bg-blue-500 text-white"
                 : "bg-[#EEEEEE]"
@@ -490,7 +493,7 @@ const ManageCallDetails = () => {
 
           <button
             onClick={handleNotCloseClick}
-            className={`text-black w-fit font-medium px-4 py-2 rounded-md shadow-custom ${
+            className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
               jobStatusFilter === "Not Close"
                 ? "bg-blue-500 text-white"
                 : "bg-[#EEEEEE]"
@@ -501,7 +504,7 @@ const ManageCallDetails = () => {
 
           <button
             onClick={handleCommissionFilterClick}
-            className={`text-black w-fit font-medium px-4 py-2 rounded-md shadow-custom ${
+            className={`text-black w-fit font-medium  text-sm px-4 py-1 rounded-md shadow-custom ${
               isCommissionFilterActive
                 ? "bg-blue-500 text-white"
                 : "bg-[#EEEEEE]"
@@ -685,7 +688,7 @@ const ManageCallDetails = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col h-[50vh] no-scrollbar bg-white overflow-auto">
+              <div className="flex flex-col h-[60vh] no-scrollbar bg-white overflow-auto">
                 {callDetails.map((detail) => (
                   <div
                     className="flex flex-row px-2 py-2 border-b border-[#BBBBBB] gap-4 font-medium text-base w-full"

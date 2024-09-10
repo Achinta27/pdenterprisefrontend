@@ -101,7 +101,10 @@ const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
 
   return (
     <div>
-      <button onClick={handleExport} className="form-submit">
+      <button
+        onClick={handleExport}
+        className="text-black w-fit bg-[#EEEEEE] font-medium px-4 py-2 text-sm rounded-md shadow-custom"
+      >
         Export to Excel
       </button>
     </div>
