@@ -701,15 +701,22 @@ const EditCallDetails = () => {
               className="form-input"
             />
           </div>
-          <div className="flex flex-row gap-4 items-center">
-            <div className="col-span-2 mt-4">
-              <button type="submit" className="form-submit" disabled={loading}>
+          <div className="flex flex-row gap-4 w-full items-center">
+            <div className="xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] mt-4">
+              <button
+                type="submit"
+                className="form-submit !w-full !h-[3.5rem]"
+                disabled={loading}
+              >
                 {loading ? "Submitting..." : "Submit"}
               </button>
               {message && <p className="mt-4">{message}</p>}
             </div>
-            <div className="col-span-2 mt-4">
-              <Link to={"/admin/manage-calldetails"} className="form-submit">
+            <div className="xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] mt-4">
+              <Link
+                to={"/admin/manage-calldetails"}
+                className="text-black bg-[#EEEEEE] font-medium flex justify-center items-center px-4 py-2 rounded-md shadow-custom w-full h-[3.5rem]"
+              >
                 Cancel
               </Link>
             </div>

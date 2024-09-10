@@ -113,7 +113,7 @@
 }
 
 .form-input {
-  @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none;
+  @apply w-full p-2 border h-[3.4rem] border-gray-300 rounded-md shadow-sm focus:outline-none;
 }
 
 .form-error {

@@ -551,8 +551,12 @@ const AddCallDetails = () => {
             />
           </div>
 
-          <div className="col-span-2 mt-4">
-            <button type="submit" className="form-submit" disabled={loading}>
+          <div className=" mt-4">
+            <button
+              type="submit"
+              className="form-submit xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] !h-[3.5rem]"
+              disabled={loading}
+            >
               {loading ? "Submitting..." : "Submit"}
             </button>
             {message && <p className="mt-4">{message}</p>}
