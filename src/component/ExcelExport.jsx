@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
-import * as XLSX from "xlsx"; // Import the xlsx library to create Excel files
+import * as XLSX from "xlsx";
 
 const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
-  const [downloadProgress, setDownloadProgress] = useState(0); // State to track progress
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const handleExport = async () => {
     try {
-      // Fetch filtered data from the backend
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/export`,
         {
-          params: filters, // Pass the filters to the backend
+          params: filters,
           onDownloadProgress: (progressEvent) => {
             const total =
               progressEvent.total ||
@@ -25,7 +24,6 @@ const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
         }
       );
 
-      // Columns for the Excel export
       const columns = [
         "callDate",
         "visitdate",
@@ -65,22 +63,19 @@ const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
         "partamount",
       ];
 
-      // Prepare the data for Excel, ensuring each row contains only the relevant columns
       const dataToExport = response.data.data.map((detail) =>
         columns.reduce((obj, col) => {
-          obj[col] = detail[col] || ""; // Use empty string if the field is missing
+          obj[col] = detail[col] || "";
           return obj;
         }, {})
       );
 
-      // Create a new workbook and add a worksheet
       const workbook = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(dataToExport, {
         header: columns,
       });
       XLSX.utils.book_append_sheet(workbook, worksheet, "Call Details");
 
-      // Generate the Excel file in memory and trigger download
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
@@ -89,7 +84,6 @@ const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      // Create a link element, trigger the download, and remove the link element
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -98,11 +92,10 @@ const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
       link.click();
       link.remove();
 
-      // Reset download progress after the download is complete
       setDownloadProgress(0);
     } catch (error) {
       console.error("Error exporting to Excel:", error);
-      setDownloadProgress(0); // Reset progress on error
+      setDownloadProgress(0);
     }
   };
 
