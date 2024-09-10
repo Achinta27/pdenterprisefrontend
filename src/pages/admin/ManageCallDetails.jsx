@@ -225,14 +225,15 @@ const ManageCallDetails = () => {
   const handleCancelDateFilter = () => {
     setDateRange([
       {
-        startDate: undefined,
-        endDate: undefined,
+        startDate: new Date(),
+        endDate: new Date(),
         key: "selection",
       },
     ]);
     setAppliedDateRange(null);
     setShowDateFilterButtons(false);
     fetchCallDetailsData(1);
+    setShowDatePicker(false);
   };
 
   const clearDateFilter = () => {
@@ -677,7 +678,7 @@ const ManageCallDetails = () => {
             <LoadingAnimation />
           ) : (
             <div className="flex flex-col gap-2">
-              <div className="flex flex-row p-4 gap-4 font-medium text-base bg-black text-white w-full border-b">
+              <div className="flex flex-row px-2 py-4 gap-4 font-medium sm:text-sm xlg:text-base bg-black text-white w-full border-b">
                 {headers.map((header, index) => (
                   <div className="flex-1" key={index}>
                     {header}
@@ -687,31 +688,31 @@ const ManageCallDetails = () => {
               <div className="flex flex-col h-[50vh] no-scrollbar bg-white overflow-auto">
                 {callDetails.map((detail) => (
                   <div
-                    className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-base w-full"
+                    className="flex flex-row px-2 py-2 border-b border-[#BBBBBB] gap-4 font-medium text-base w-full"
                     key={detail.calldetailsId}
                   >
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.customerName}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.contactNumber}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.address}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {formatDate(detail.callDate)}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {formatDate(detail.visitdate)}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.serviceType}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 ">
                       <button
                         onClick={() => handleProceedClick(detail.calldetailsId)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded-md"
+                        className="bg-blue-500 text-white px-3 py-1 rounded-sm"
                       >
                         Proceed
                       </button>

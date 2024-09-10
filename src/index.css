@@ -85,6 +85,15 @@
   text-overflow: ellipsis;
   white-space: normal;
 }
+
+.twolinelimit {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limits to 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .custom-shadow {
   text-shadow: 2px 2px 4px #023102;
 }

@@ -152,6 +152,24 @@ const EditCallDetails = () => {
 
   const validateForm = () => {
     const newErrors = {};
+    let formValid = true;
+
+    const contactNumberRegex = /^\d{10}$/;
+
+    // Validate contact number (must be exactly 10 digits)
+    if (!contactNumberRegex.test(formData.contactNumber)) {
+      newErrors.contactNumber = "Mobile Number must be exactly 10 digits.";
+      formValid = false;
+    }
+
+    // Validate WhatsApp number (optional, but if filled, must be exactly 10 digits)
+    if (
+      formData.whatsappNumber &&
+      !contactNumberRegex.test(formData.whatsappNumber)
+    ) {
+      newErrors.whatsappNumber = "WhatsApp Number must be exactly 10 digits.";
+      formValid = false;
+    }
 
     const requiredFields = [
       "callDate",
@@ -231,8 +249,15 @@ const EditCallDetails = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "contactNumber" || name === "whatsappNumber") {
+      if (value.length <= 10 && /^\d*$/.test(value)) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setErrors((prev) => ({ ...prev, [name]: "" })); // Reset errors when input is valid
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleDateChange = (date, name) => {
