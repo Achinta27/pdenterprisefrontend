@@ -1,0 +1,723 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Link, useParams } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
+
+const EditCallDetails = () => {
+  const { calldetailsId } = useParams(); // Get the ID from the URL
+  const [formData, setFormData] = useState({
+    callDate: null,
+    visitdate: null,
+    callNumber: "",
+    brandName: "",
+    customerName: "",
+    address: "",
+    route: "",
+    contactNumber: "",
+    whatsappNumber: "",
+    engineer: "",
+    productsName: "",
+    warrantyTerms: "",
+    TAT: "",
+    serviceType: "",
+    remarks: "",
+    parts: "",
+    jobStatus: "",
+    modelNumber: "",
+    iduser: "",
+    closerCode: "",
+    dateofPurchase: null,
+    oduser: "",
+    followupdate: null,
+    gddate: null,
+    receivefromEngineer: "",
+    amountReceived: "",
+    commissionow: "",
+    serviceChange: "",
+    commissionDate: null,
+    NPS: "",
+    incentive: "",
+    expenses: "",
+    approval: "",
+    totalAmount: "",
+    commissioniw: "",
+    partamount: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [brands, setBrands] = useState([]);
+  const [engineers, setEngineers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [warranties, setWarranties] = useState([]);
+  const [services, setServices] = useState([]);
+  const [jobStatuses, setJobStatuses] = useState([]);
+
+  useEffect(() => {
+    fetchDropdownData();
+    fetchCallDetail();
+  }, [calldetailsId]);
+
+  const fetchDropdownData = async () => {
+    try {
+      const [
+        brandRes,
+        engineerRes,
+        productRes,
+        warrantyRes,
+        serviceRes,
+        jobStatusRes,
+      ] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/brandsadd/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/enginnerdetails/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/productsadd/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/warrantytype/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/servicetype/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/jobstatus/get`),
+      ]);
+
+      setBrands(brandRes.data);
+      setEngineers(engineerRes.data);
+      setProducts(productRes.data);
+      setWarranties(warrantyRes.data);
+      setServices(serviceRes.data);
+      setJobStatuses(jobStatusRes.data);
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    }
+  };
+
+  const parseDate = (dateString) => {
+    // If dateString is empty, return null
+    if (!dateString) return null;
+    // If dateString is already in ISO format, convert it to a Date object
+    const date = new Date(dateString);
+    // Ensure it's a valid date before returning
+    return isNaN(date) ? null : date;
+  };
+
+  const fetchCallDetail = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get/${calldetailsId}`
+      );
+      const callDetail = response.data.data;
+
+      // Pre-fill the form with the call details from the backend
+      setFormData({
+        callDate: parseDate(callDetail.callDate),
+        visitdate: parseDate(callDetail.visitdate),
+        callNumber: callDetail.callNumber,
+        brandName: callDetail.brandName,
+        customerName: callDetail.customerName,
+        address: callDetail.address,
+        route: callDetail.route,
+        contactNumber: callDetail.contactNumber,
+        whatsappNumber: callDetail.whatsappNumber,
+        engineer: callDetail.engineer,
+        productsName: callDetail.productsName,
+        warrantyTerms: callDetail.warrantyTerms,
+        TAT: callDetail.TAT,
+        serviceType: callDetail.serviceType,
+        remarks: callDetail.remarks,
+        parts: callDetail.parts,
+        jobStatus: callDetail.jobStatus,
+        modelNumber: callDetail.modelNumber,
+        iduser: callDetail.iduser,
+        closerCode: callDetail.closerCode,
+        dateofPurchase: parseDate(callDetail.dateofPurchase),
+        oduser: callDetail.oduser,
+        followupdate: parseDate(callDetail.followupdate),
+        gddate: parseDate(callDetail.gddate),
+        receivefromEngineer: callDetail.receivefromEngineer,
+        amountReceived: callDetail.amountReceived,
+        commissionow: callDetail.commissionow,
+        serviceChange: callDetail.serviceChange,
+        commissionDate: parseDate(callDetail.commissionDate),
+        NPS: callDetail.NPS,
+        incentive: callDetail.incentive,
+        expenses: callDetail.expenses,
+        approval: callDetail.approval,
+        totalAmount: callDetail.totalAmount,
+        commissioniw: callDetail.commissioniw,
+        partamount: callDetail.partamount,
+      });
+    } catch (error) {
+      console.error("Error fetching call detail:", error);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    const requiredFields = [
+      "callDate",
+      "callNumber",
+      "brandName",
+      "customerName",
+      "contactNumber",
+      "productsName",
+      "warrantyTerms",
+      "serviceType",
+      "jobStatus",
+    ];
+    requiredFields.forEach((field) => {
+      if (!formData[field]) {
+        newErrors[field] = "This field is required";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setLoading(true);
+
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.patch(
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/api/calldetails/update/${calldetailsId}`,
+        formData
+      );
+
+      if (response.status === 200) {
+        setMessage("Call Details Updated Successfully");
+      } else {
+        setMessage("Failed to update call details");
+      }
+    } catch (error) {
+      console.error("Error updating call details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const { serviceChange, incentive, NPS, approval, expenses, commissioniw } =
+      formData;
+
+    const calculatedTotalAmount =
+      (parseFloat(serviceChange) || 0) +
+      (parseFloat(incentive) || 0) +
+      (parseFloat(NPS) || 0) +
+      (parseFloat(approval) || 0) -
+      (parseFloat(expenses) || 0) -
+      (parseFloat(commissioniw) || 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      totalAmount: calculatedTotalAmount.toFixed(2), // Calculate and set totalAmount
+    }));
+  }, [
+    formData.serviceChange,
+    formData.incentive,
+    formData.NPS,
+    formData.approval,
+    formData.expenses,
+    formData.commissioniw,
+  ]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleDateChange = (date, name) => {
+    setFormData((prev) => ({ ...prev, [name]: date }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  return (
+    <AdminDashboardTemplate>
+      <div className="p-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6 w-full">
+          <div className="w-full">
+            <label className="form-label">Call Date</label>
+            <DatePicker
+              selected={formData.callDate}
+              onChange={(date) => handleDateChange(date, "callDate")}
+              className="form-input"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+            />
+            {errors.callDate && <p className="form-error">{errors.callDate}</p>}
+          </div>
+
+          <div>
+            <label className="form-label">Visit Date</label>
+            <DatePicker
+              selected={formData.visitdate}
+              onChange={(date) => handleDateChange(date, "visitdate")}
+              className="form-input"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Call Number</label>
+            <input
+              type="text"
+              name="callNumber"
+              value={formData.callNumber}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+            {errors.callNumber && (
+              <p className="form-error">{errors.callNumber}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Brand Name</label>
+            <select
+              name="brandName"
+              value={formData.brandName}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Brand</option>
+              {brands.map((brand) => (
+                <option key={brand.brandId} value={brand.brandname}>
+                  {brand.brandname}
+                </option>
+              ))}
+            </select>
+            {errors.brandName && (
+              <p className="form-error">{errors.brandName}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Customer Name</label>
+            <input
+              type="text"
+              name="customerName"
+              value={formData.customerName}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+            {errors.customerName && (
+              <p className="form-error">{errors.customerName}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Address</label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Route</label>
+            <input
+              type="text"
+              name="route"
+              value={formData.route}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Contact Number</label>
+            <input
+              type="text"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+            {errors.contactNumber && (
+              <p className="form-error">{errors.contactNumber}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">WhatsApp Number</label>
+            <input
+              type="text"
+              name="whatsappNumber"
+              value={formData.whatsappNumber}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Engineer</label>
+            <select
+              name="engineer"
+              value={formData.engineer}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Engineer</option>
+              {engineers.map((engineer) => (
+                <option key={engineer.engineerId} value={engineer.engineername}>
+                  {engineer.engineername}
+                </option>
+              ))}
+            </select>
+            {errors.engineer && <p className="form-error">{errors.engineer}</p>}
+          </div>
+
+          <div>
+            <label className="form-label">Product Name</label>
+            <select
+              name="productsName"
+              value={formData.productsName}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Product</option>
+              {products.map((product) => (
+                <option key={product.productId} value={product.productname}>
+                  {product.productname}
+                </option>
+              ))}
+            </select>
+            {errors.productsName && (
+              <p className="form-error">{errors.productsName}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Warranty Terms</label>
+            <select
+              name="warrantyTerms"
+              value={formData.warrantyTerms}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Warranty</option>
+              {warranties.map((warranty) => (
+                <option key={warranty.warrantyId} value={warranty.warrantytype}>
+                  {warranty.warrantytype}
+                </option>
+              ))}
+            </select>
+            {errors.warrantyTerms && (
+              <p className="form-error">{errors.warrantyTerms}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">TAT</label>
+            <input
+              type="text"
+              name="TAT"
+              value={formData.TAT}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Service Type</label>
+            <select
+              name="serviceType"
+              value={formData.serviceType}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Service Type</option>
+              {services.map((service) => (
+                <option key={service.serviceId} value={service.servicetype}>
+                  {service.servicetype}
+                </option>
+              ))}
+            </select>
+            {errors.serviceType && (
+              <p className="form-error">{errors.serviceType}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Remarks</label>
+            <input
+              type="text"
+              name="remarks"
+              value={formData.remarks}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Parts</label>
+            <input
+              type="text"
+              name="parts"
+              value={formData.parts}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Job Status</label>
+            <select
+              name="jobStatus"
+              value={formData.jobStatus}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Job Status</option>
+              {jobStatuses.map((status) => (
+                <option key={status.jobstatusId} value={status.jobstatusName}>
+                  {status.jobstatusName}
+                </option>
+              ))}
+            </select>
+            {errors.jobStatus && (
+              <p className="form-error">{errors.jobStatus}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Model Number</label>
+            <input
+              type="text"
+              name="modelNumber"
+              value={formData.modelNumber}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">ID User</label>
+            <input
+              type="text"
+              name="iduser"
+              value={formData.iduser}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Closer Code</label>
+            <input
+              type="text"
+              name="closerCode"
+              value={formData.closerCode}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Date of Purchase</label>
+            <DatePicker
+              selected={formData.dateofPurchase}
+              onChange={(date) => handleDateChange(date, "dateofPurchase")}
+              className="form-input"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+            />
+          </div>
+
+          <div>
+            <label className="form-label">OD User</label>
+            <input
+              type="text"
+              name="oduser"
+              value={formData.oduser}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Follow-up Date</label>
+            <DatePicker
+              selected={formData.followupdate}
+              onChange={(date) => handleDateChange(date, "followupdate")}
+              className="form-input"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+            />
+          </div>
+
+          <div>
+            <label className="form-label">GD Date</label>
+            <DatePicker
+              selected={formData.gddate}
+              onChange={(date) => handleDateChange(date, "gddate")}
+              className="form-input"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Receive from Engineer</label>
+            <input
+              type="text"
+              name="receivefromEngineer"
+              value={formData.receivefromEngineer}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Amount Received</label>
+            <input
+              type="text"
+              name="amountReceived"
+              value={formData.amountReceived}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Commission OW</label>
+            <input
+              type="text"
+              name="commissionow"
+              value={formData.commissionow}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Service Charge</label>
+            <input
+              type="text"
+              name="serviceChange"
+              value={formData.serviceChange}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Commission Date</label>
+            <DatePicker
+              selected={formData.commissionDate}
+              onChange={(date) => handleDateChange(date, "commissionDate")}
+              className="form-input"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+            />
+          </div>
+
+          <div>
+            <label className="form-label">NPS</label>
+            <input
+              type="text"
+              name="NPS"
+              value={formData.NPS}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Incentive</label>
+            <input
+              type="text"
+              name="incentive"
+              value={formData.incentive}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Expenses</label>
+            <input
+              type="text"
+              name="expenses"
+              value={formData.expenses}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Approval</label>
+            <input
+              type="text"
+              name="approval"
+              value={formData.approval}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Total Amount</label>
+            <input
+              type="text"
+              name="totalAmount"
+              value={formData.totalAmount}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Commission IW</label>
+            <input
+              type="text"
+              name="commissioniw"
+              value={formData.commissioniw}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Part Amount</label>
+            <input
+              type="text"
+              name="partamount"
+              value={formData.partamount}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+          <div className="flex flex-row gap-4 items-center">
+            <div className="col-span-2 mt-4">
+              <button type="submit" className="form-submit" disabled={loading}>
+                {loading ? "Submitting..." : "Submit"}
+              </button>
+              {message && <p className="mt-4">{message}</p>}
+            </div>
+            <div className="col-span-2 mt-4">
+              <Link to={"/admin/manage-calldetails"} className="form-submit">
+                Cancel
+              </Link>
+            </div>
+          </div>
+        </form>
+      </div>
+    </AdminDashboardTemplate>
+  );
+};
+
+export default EditCallDetails;
