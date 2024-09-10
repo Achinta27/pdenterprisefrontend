@@ -104,14 +104,6 @@ const ExcelExport = ({ filters, fileName = "call_details.xlsx" }) => {
       <button onClick={handleExport} className="form-submit">
         Export to Excel
       </button>
-      {downloadProgress > 0 && (
-        <div>
-          <p>Download Progress: {downloadProgress}%</p>
-          <progress value={downloadProgress} max="100">
-            {downloadProgress}%
-          </progress>
-        </div>
-      )}
     </div>
   );
 };
