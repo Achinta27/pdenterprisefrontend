@@ -97,6 +97,8 @@ const ManageCallDetails = () => {
       mobileNumber: mobileNumberFilter || undefined,
       noEngineer: isEngineerFilterActive ? true : undefined,
       commissionOw: isCommissionFilterActive ? true : undefined,
+      notClose: jobStatusFilter === "Not Close" ? true : undefined,
+      followup: jobStatusFilter === "FollowUp" ? true : undefined,
       startDate,
       endDate,
     };

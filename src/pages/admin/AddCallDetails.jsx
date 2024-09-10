@@ -3,6 +3,7 @@ import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
+import { useNavigate } from "react-router-dom";
 
 const AddCallDetails = () => {
   const [formData, setFormData] = useState({
@@ -124,6 +125,8 @@ const AddCallDetails = () => {
     return formValid && Object.keys(newErrors).length === 0;
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -142,6 +145,7 @@ const AddCallDetails = () => {
 
       if (response.status === 201) {
         setMessage("Call Details Created Successfully");
+        navigate(`/admin/manage-calldetails`);
         setFormData({
           callDate: null,
           visitdate: null,
@@ -212,7 +216,6 @@ const AddCallDetails = () => {
   return (
     <AdminDashboardTemplate>
       <div className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Add Call Details</h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6 w-full">
           <div className="w-full">
             <label className="form-label">Call Date</label>
