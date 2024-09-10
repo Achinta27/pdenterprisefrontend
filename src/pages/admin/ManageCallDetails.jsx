@@ -556,7 +556,7 @@ const ManageCallDetails = () => {
             {isDateFilterApplied() ? (
               <button
                 onClick={clearDateFilter}
-                className="px-4 py-1 bg-red-500 text-white rounded-lg"
+                className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
               >
                 Clear
               </button>
@@ -566,16 +566,16 @@ const ManageCallDetails = () => {
           </div>
 
           {showDateFilterButtons && (
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 text-sm">
               <button
                 onClick={handleApplyDateFilter}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
               >
                 Show
               </button>
               <button
                 onClick={handleCancelDateFilter}
-                className="px-4 py-2 bg-gray-300 text-black rounded-lg"
+                className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
               >
                 Cancel
               </button>
@@ -588,7 +588,7 @@ const ManageCallDetails = () => {
               placeholder="Search using number"
               value={mobileNumberFilter}
               onChange={handleMobileNumberChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border !shadow-custom border-[#cccccc] text-sm rounded-md"
             />
           </div>
 

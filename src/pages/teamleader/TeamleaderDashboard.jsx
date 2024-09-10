@@ -7,6 +7,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import LoadingAnimation from "../../component/LoadingAnimation";
 import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
 
+import { DateRangePicker } from "react-date-range";
+
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import { format } from "date-fns";
+
 const TeamleaderDashboard = () => {
   const [callDetails, setCallDetails] = useState([]);
   const [cachedPages, setCachedPages] = useState({});
@@ -34,6 +40,17 @@ const TeamleaderDashboard = () => {
   const [selectedWarrantyTerm, setSelectedWarrantyTerm] = useState("");
   const [selectedServiceType, setSelectedServiceType] = useState("");
   const [mobileNumberFilter, setMobileNumberFilter] = useState("");
+  const [showDateFilterButtons, setShowDateFilterButtons] = useState(false);
+  const [appliedDateRange, setAppliedDateRange] = useState(null);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
 
   useEffect(() => {
     if (teamleaderId) {
@@ -47,12 +64,19 @@ const TeamleaderDashboard = () => {
     selectedWarrantyTerm,
     selectedServiceType,
     mobileNumberFilter,
-
+    appliedDateRange,
     teamleaderId,
   ]);
 
   const fetchCallDetailsData = async (page) => {
     setLoading(true);
+
+    const startDate = appliedDateRange
+      ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
+      : undefined;
+    const endDate = appliedDateRange
+      ? format(appliedDateRange[0].endDate, "yyyy-MM-dd")
+      : undefined;
 
     const params = {
       page,
@@ -63,6 +87,8 @@ const TeamleaderDashboard = () => {
       warrantyTerms: selectedWarrantyTerm || undefined,
       serviceType: selectedServiceType || undefined,
       mobileNumber: mobileNumberFilter || undefined,
+      startDate,
+      endDate,
     };
 
     try {
@@ -94,6 +120,71 @@ const TeamleaderDashboard = () => {
     } catch (error) {
       console.error("Error fetching filter options:", error);
     }
+  };
+
+  const handleDateChange = (ranges) => {
+    let { startDate, endDate } = ranges.selection;
+
+    if (!endDate || endDate === startDate) {
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    if (endDate < startDate) {
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    setDateRange([
+      {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        key: "selection",
+      },
+    ]);
+
+    setShowDateFilterButtons(true);
+  };
+
+  const handleApplyDateFilter = () => {
+    setAppliedDateRange(dateRange);
+    setShowDatePicker(false);
+    setShowDateFilterButtons(false);
+    fetchCallDetailsData(1);
+  };
+
+  const handleCancelDateFilter = () => {
+    setDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedDateRange(null);
+    setShowDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setShowDatePicker(false);
+  };
+
+  const clearDateFilter = () => {
+    setDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedDateRange(null);
+    setShowDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setShowDatePicker(false);
+  };
+
+  const isDateFilterApplied = () => {
+    return (
+      appliedDateRange !== null &&
+      appliedDateRange[0].startDate !== undefined &&
+      appliedDateRange[0].endDate !== undefined
+    );
   };
 
   const handleViewClick = (callDetail) => {
@@ -239,13 +330,61 @@ const TeamleaderDashboard = () => {
     <TeamLeaderDashboardTemplate>
       <div className="flex flex-col gap-8">
         <div className="flex flex-wrap gap-4">
+          <div className="relative">
+            <input
+              type="text"
+              readOnly
+              value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
+              className="md:px-2 w-fit shadow-custom !outline-none md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+              onClick={() => setShowDatePicker(!showDatePicker)}
+            />
+
+            {showDatePicker && (
+              <div className="absolute z-10 top-16 bg-white shadow-lg">
+                <DateRangePicker
+                  ranges={dateRange}
+                  onChange={handleDateChange}
+                  rangeColors={["#3b82f6"]}
+                />
+              </div>
+            )}
+          </div>
+          <div>
+            {isDateFilterApplied() ? (
+              <button
+                onClick={clearDateFilter}
+                className="px-4 py-1 bg-red-500 text-sm shadow-custom text-white rounded-lg"
+              >
+                Clear
+              </button>
+            ) : (
+              ""
+            )}
+          </div>
+
+          {showDateFilterButtons && (
+            <div className="flex gap-2 text-sm">
+              <button
+                onClick={handleApplyDateFilter}
+                className="px-4 py-1 bg-blue-500 shadow-custom text-white rounded-lg"
+              >
+                Show
+              </button>
+              <button
+                onClick={handleCancelDateFilter}
+                className="px-4 py-1 bg-gray-300 shadow-custom text-black rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
           <div>
             <input
               type="text"
               placeholder="Search using number"
               value={mobileNumberFilter}
               onChange={handleMobileNumberChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             />
           </div>
 
@@ -254,7 +393,7 @@ const TeamleaderDashboard = () => {
               name="status"
               value={selectedJobStatus}
               onChange={handleJobStatusChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Status</option>
               {filterOptions.jobStatuss.map((jobStatus, index) => (
@@ -270,7 +409,7 @@ const TeamleaderDashboard = () => {
               name="engineer"
               value={selectedEngineer}
               onChange={handleEngineerChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Engineer</option>
               {/* {filterOptions.engineers.map((engineer, index) => (
@@ -286,7 +425,7 @@ const TeamleaderDashboard = () => {
               name="brand"
               value={selectedBrand}
               onChange={handleBrandChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Brand</option>
               {filterOptions.brands.map((brand, index) => (
@@ -302,7 +441,7 @@ const TeamleaderDashboard = () => {
               name="warrantyTerms"
               value={selectedWarrantyTerm}
               onChange={handleWarrantyTermChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Warranty Terms</option>
               {/* {filterOptions.warrantyTerms.map((term, index) => (
@@ -318,7 +457,7 @@ const TeamleaderDashboard = () => {
               name="serviceType"
               value={selectedServiceType}
               onChange={handleServiceTypeChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Service Type</option>
               {filterOptions.serviceTypes.map((type, index) => (
@@ -330,7 +469,7 @@ const TeamleaderDashboard = () => {
           </div>
           <Link
             to={`/teamleader/add-calldetails/${teamleaderId}`}
-            className="form-submit"
+            className="text-black w-fit bg-[#EEEEEE] font-medium px-4 py-1 text-sm rounded-md shadow-custom"
           >
             Add Call
           </Link>
