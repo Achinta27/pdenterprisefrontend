@@ -55,8 +55,8 @@ const ManageCallDetails = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
-      startDate: new Date(), // Start date of range
-      endDate: new Date(), // End date of range
+      startDate: new Date(),
+      endDate: new Date(),
       key: "selection",
     },
   ]);
@@ -74,6 +74,7 @@ const ManageCallDetails = () => {
     isEngineerFilterActive,
     isCommissionFilterActive,
     jobStatusFilter,
+    appliedDateRange,
   ]);
 
   const fetchCallDetailsData = async (page) => {
@@ -96,7 +97,7 @@ const ManageCallDetails = () => {
       mobileNumber: mobileNumberFilter || undefined,
       noEngineer: isEngineerFilterActive ? true : undefined,
       commissionOw: isCommissionFilterActive ? true : undefined,
-      startDate, // Will be undefined if not selected
+      startDate,
       endDate,
     };
 
@@ -191,33 +192,72 @@ const ManageCallDetails = () => {
   };
 
   const handleDateChange = (ranges) => {
-    setDateRange([ranges.selection]); // Update the selected date range
-    setShowDateFilterButtons(true); // Show "Show" and "Cancel" buttons
+    let { startDate, endDate } = ranges.selection;
+
+    if (!endDate || endDate === startDate) {
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    if (endDate < startDate) {
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    setDateRange([
+      {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        key: "selection",
+      },
+    ]);
+
+    setShowDateFilterButtons(true);
   };
 
   const handleApplyDateFilter = () => {
-    setAppliedDateRange(dateRange); // Store the applied date range
-    setShowDateFilterButtons(false); // Hide the "Show" and "Cancel" buttons
-    fetchCallDetailsData(1); // Fetch data with the new date filter
+    setAppliedDateRange(dateRange);
+    setShowDatePicker(false);
+    setShowDateFilterButtons(false);
+    fetchCallDetailsData(1);
   };
 
   const handleCancelDateFilter = () => {
     setDateRange([
       {
-        startDate: undefined, // Reset start date to undefined
-        endDate: undefined, // Reset end date to undefined
+        startDate: undefined,
+        endDate: undefined,
         key: "selection",
       },
     ]);
-    setAppliedDateRange(null); // Clear the applied date filter
-    setShowDateFilterButtons(false); // Hide the "Show" and "Cancel" buttons
-    fetchCallDetailsData(1); // Fetch all data without date filters
+    setAppliedDateRange(null);
+    setShowDateFilterButtons(false);
+    fetchCallDetailsData(1);
+  };
+
+  const clearDateFilter = () => {
+    setDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedDateRange(null);
+    setShowDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setShowDatePicker(false);
+  };
+
+  const isDateFilterApplied = () => {
+    return (
+      appliedDateRange !== null &&
+      appliedDateRange[0].startDate !== undefined &&
+      appliedDateRange[0].endDate !== undefined
+    );
   };
 
   useEffect(() => {
-    // Fetch data again when mobile number is cleared
     if (mobileNumberFilter === "") {
-      fetchCallDetailsData(1); // Reset to page 1 and fetch data
+      fetchCallDetailsData(1);
     }
   }, [mobileNumberFilter]);
 
@@ -238,26 +278,26 @@ const ManageCallDetails = () => {
 
   const handleEngineerFilterClick = () => {
     setIsEngineerFilterActive((prevState) => !prevState);
-    setCurrentPage(1); // Reset to page 1
+    setCurrentPage(1);
   };
 
   const handleCommissionFilterClick = () => {
     setIsCommissionFilterActive((prevState) => !prevState);
-    setCurrentPage(1); // Reset to page 1
+    setCurrentPage(1);
   };
 
   const handleFollowUpClick = () => {
     setJobStatusFilter((prevStatus) =>
       prevStatus === "FollowUp" ? null : "FollowUp"
     );
-    setCurrentPage(1); // Reset to page 1
+    setCurrentPage(1);
   };
 
   const handleNotCloseClick = () => {
     setJobStatusFilter((prevStatus) =>
       prevStatus === "Not Close" ? null : "Not Close"
     );
-    setCurrentPage(1); // Reset to page 1
+    setCurrentPage(1);
   };
 
   const handleProceedClick = (calldetailsId) => {
@@ -275,7 +315,7 @@ const ManageCallDetails = () => {
 
   const handleDeleteClick = (callDetail) => {
     setCallDetailToDelete(callDetail);
-    setShowDeletePopup(true); // Show the delete confirmation popup
+    setShowDeletePopup(true);
   };
 
   const confirmDelete = async () => {
@@ -287,7 +327,7 @@ const ManageCallDetails = () => {
           callDetailToDelete.calldetailsId
         }`
       );
-      // Remove the deleted call detail from the state
+
       setCallDetails((prevDetails) =>
         prevDetails.filter(
           (detail) => detail.calldetailsId !== callDetailToDelete.calldetailsId
@@ -489,24 +529,36 @@ const ManageCallDetails = () => {
           />
         </div>
 
-        <div className="flex flex-wrap gap-4  ">
-          {/* <div className="relative">
+        <div className="flex flex-wrap gap-4 items-center  ">
+          <div className="relative">
             <input
               type="text"
               readOnly
               value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
               className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
-              onClick={() => setShowDatePicker(!showDatePicker)} 
+              onClick={() => setShowDatePicker(!showDatePicker)}
             />
 
             {showDatePicker && (
-              <div className="absolute z-10 bg-white shadow-lg">
+              <div className="absolute z-10 top-16 bg-white shadow-lg">
                 <DateRangePicker
                   ranges={dateRange}
                   onChange={handleDateChange}
                   rangeColors={["#3b82f6"]}
                 />
               </div>
+            )}
+          </div>
+          <div>
+            {isDateFilterApplied() ? (
+              <button
+                onClick={clearDateFilter}
+                className="px-4 py-1 bg-red-500 text-white rounded-lg"
+              >
+                Clear
+              </button>
+            ) : (
+              ""
             )}
           </div>
 
@@ -525,7 +577,7 @@ const ManageCallDetails = () => {
                 Cancel
               </button>
             </div>
-          )} */}
+          )}
 
           <div>
             <input
