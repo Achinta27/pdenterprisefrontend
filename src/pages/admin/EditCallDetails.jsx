@@ -188,14 +188,6 @@ const EditCallDetails = () => {
       "warrantyTerms",
       "serviceType",
       "jobStatus",
-      "receivefromEngineer",
-      "commissionow",
-      "serviceChange",
-      "NPS",
-      "incentive",
-      "approval",
-      "expenses",
-      "commissioniw",
     ];
     requiredFields.forEach((field) => {
       if (!formData[field]) {
