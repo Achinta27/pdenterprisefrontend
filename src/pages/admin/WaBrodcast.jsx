@@ -258,7 +258,7 @@ const WaBrodcast = () => {
               }`}
               onClick={() => handleTemplateSelect(template.id)}
             >
-              <div className="text-xl font-semibold text-[#FF2722]">
+              <div className="text-xl font-semibold text-[#000000]">
                 {template.name}
               </div>
               {/* Render Header (Image or Document) */}

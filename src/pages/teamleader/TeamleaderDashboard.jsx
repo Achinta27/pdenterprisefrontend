@@ -439,11 +439,11 @@ const TeamleaderDashboard = () => {
               className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Engineer</option>
-              {/* {filterOptions.engineers.map((engineer, index) => (
+              {filterOptions.engineers.map((engineer, index) => (
                 <option key={index} value={engineer}>
                   {engineer}
                 </option>
-              ))} */}
+              ))}
             </select>
           </div>
 
@@ -471,11 +471,11 @@ const TeamleaderDashboard = () => {
               className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
             >
               <option value="">By Warranty Terms</option>
-              {/* {filterOptions.warrantyTerms.map((term, index) => (
+              {filterOptions.warrantyTerms.map((term, index) => (
                 <option key={index} value={term}>
                   {term}
                 </option>
-              ))} */}
+              ))}
             </select>
           </div>
 
