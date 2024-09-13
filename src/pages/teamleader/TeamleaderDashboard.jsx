@@ -46,6 +46,7 @@ const TeamleaderDashboard = () => {
   const [mobileNumberFilter, setMobileNumberFilter] = useState("");
   const [showDateFilterButtons, setShowDateFilterButtons] = useState(false);
   const [appliedDateRange, setAppliedDateRange] = useState(null);
+  const [searchFilter, setSearchFilter] = useState("");
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState([
@@ -66,8 +67,8 @@ const TeamleaderDashboard = () => {
     selectedJobStatus,
     selectedEngineer,
     selectedWarrantyTerm,
+    searchFilter,
     selectedServiceType,
-    mobileNumberFilter,
     appliedDateRange,
     teamleaderId,
   ]);
@@ -90,7 +91,7 @@ const TeamleaderDashboard = () => {
       engineer: selectedEngineer || undefined,
       warrantyTerms: selectedWarrantyTerm || undefined,
       serviceType: selectedServiceType || undefined,
-      mobileNumber: mobileNumberFilter || undefined,
+      number: searchFilter || undefined,
       startDate,
       endDate,
     };
@@ -144,6 +145,17 @@ const TeamleaderDashboard = () => {
     ]);
 
     setShowDateFilterButtons(true);
+  };
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchFilter(value);
+
+    if (value === "") {
+      setCurrentPage(1);
+      fetchCallDetailsData(1); // Fetch all results when the input is empty
+    } else {
+      setCurrentPage(1); // Reset to first page when filtering
+    }
   };
 
   const handleApplyDateFilter = () => {
@@ -409,9 +421,9 @@ const TeamleaderDashboard = () => {
             <input
               type="text"
               placeholder="Search using number"
-              value={mobileNumberFilter}
-              onChange={handleMobileNumberChange}
-              className="px-4 p-1 border shadow-custom !outline-none border-[#cccccc] text-sm rounded-md"
+              value={searchFilter}
+              onChange={handleSearchChange}
+              className="px-4 p-1 border !shadow-custom border-[#cccccc] text-sm rounded-md"
             />
           </div>
 

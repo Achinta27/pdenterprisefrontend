@@ -4,6 +4,7 @@ import { FaCheck } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { RxCross2 } from "react-icons/rx";
+import ConfirmationModal from "./ConfirmationModel";
 
 const ManageUser = ({ users, fetchUsers, setUsers }) => {
   const [loading, setLoading] = useState(false);
@@ -16,6 +17,8 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // New state for modal
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Pagination
   const indexOfLastUser = currentPage * usersPerPage;
@@ -90,12 +93,20 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
     }
   };
 
-  const handleDeleteClick = async (user) => {
+  const handleDeleteClick = (user) => {
+    setSelectedUser(user);
+    setIsModalOpen(true); // Open modal when delete is clicked
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!selectedUser) return;
     const url =
-      user.designation === "Admin"
-        ? `${import.meta.env.VITE_BASE_URL}/api/users/delete/${user.userId}`
+      selectedUser.designation === "Admin"
+        ? `${import.meta.env.VITE_BASE_URL}/api/users/delete/${
+            selectedUser.userId
+          }`
         : `${import.meta.env.VITE_BASE_URL}/api/teamleader/delete/${
-            user.teamleaderId
+            selectedUser.teamleaderId
           }`;
 
     try {
@@ -103,6 +114,9 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
+    } finally {
+      setIsModalOpen(false); // Close the modal after deleting
+      setSelectedUser(null); // Clear selected user
     }
   };
   const handleCancelClick = () => {
@@ -244,6 +258,14 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        message={`Are you sure you want to delete ${
+          selectedUser?.name || selectedUser?.teamleadername
+        }?`}
+        onConfirm={confirmDeleteUser}
+        onCancel={() => setIsModalOpen(false)}
+      />
 
       {/* Popup for Editing */}
       {isPopupOpen && (

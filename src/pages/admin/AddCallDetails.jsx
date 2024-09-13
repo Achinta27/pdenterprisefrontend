@@ -207,6 +207,55 @@ const AddCallDetails = () => {
     }
   };
 
+  const evaluateExpression = (expression) => {
+    try {
+      const percentageRegex = /(\d+)(\s?[%])/g;
+      let expressionWithPercent = expression.replace(
+        percentageRegex,
+        (match, p1) => {
+          const prevNumberMatch = expression
+            .slice(0, expression.indexOf(match))
+            .match(/(\d+)(?=\D*$)/);
+          if (prevNumberMatch) {
+            const prevNumber = prevNumberMatch[0];
+            return `(${prevNumber} * ${p1} / 100)`;
+          }
+          return match;
+        }
+      );
+
+      const sanitizedExpression = expressionWithPercent.replace(
+        /[^-()\d/*+.]/g,
+        ""
+      );
+      const result = new Function(`return ${sanitizedExpression}`)();
+      return result;
+    } catch (error) {
+      setMessage("Invalid expression");
+      return expression;
+    }
+  };
+
+  const handleKeyUp = (e, field) => {
+    if (e.key === "=") {
+      const expression = formData[field];
+      const result = evaluateExpression(expression);
+      setFormData((prev) => ({
+        ...prev,
+        [field]: result,
+      }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    const expression = formData[field];
+    const result = evaluateExpression(expression);
+    setFormData((prev) => ({
+      ...prev,
+      [field]: result,
+    }));
+  };
+
   const calculateTAT = (callDate) => {
     const today = new Date();
     const dateDifference = Math.ceil(
@@ -217,7 +266,6 @@ const AddCallDetails = () => {
 
   const handleDateChange = (date, name) => {
     if (date) {
-      // Convert to UTC explicitly
       const utcDate = new Date(
         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
       );
@@ -250,6 +298,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "callDate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>
@@ -505,11 +554,22 @@ const AddCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">ID User</label>
+            <label className="form-label">IDU Serial No</label>
             <input
               type="text"
               name="iduser"
               value={formData.iduser}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">ODU Serial No</label>
+            <input
+              type="text"
+              name="oduser"
+              value={formData.oduser}
               onChange={handleInputChange}
               className="form-input"
             />
@@ -533,17 +593,6 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "dateofPurchase")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
-            />
-          </div>
-
-          <div>
-            <label className="form-label">OD User</label>
-            <input
-              type="text"
-              name="oduser"
-              value={formData.oduser}
-              onChange={handleInputChange}
-              className="form-input"
             />
           </div>
 
@@ -574,6 +623,8 @@ const AddCallDetails = () => {
               name="receivefromEngineer"
               value={formData.receivefromEngineer}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "receivefromEngineer")}
+              onBlur={() => handleBlur("receivefromEngineer")}
               className="form-input"
             />
           </div>

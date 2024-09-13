@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
@@ -207,6 +207,8 @@ const EditCallDetails = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -226,6 +228,7 @@ const EditCallDetails = () => {
       );
 
       if (response.status === 200) {
+        navigate(`/admin/dashboard`);
         setMessage("Call Details Updated Successfully");
       } else {
         setMessage("Failed to update call details");
@@ -295,6 +298,55 @@ const EditCallDetails = () => {
     return dateDifference > 0 ? dateDifference : 1; // Minimum TAT should be 1
   };
 
+  const evaluateExpression = (expression) => {
+    try {
+      const percentageRegex = /(\d+)(\s?[%])/g;
+      let expressionWithPercent = expression.replace(
+        percentageRegex,
+        (match, p1) => {
+          const prevNumberMatch = expression
+            .slice(0, expression.indexOf(match))
+            .match(/(\d+)(?=\D*$)/);
+          if (prevNumberMatch) {
+            const prevNumber = prevNumberMatch[0];
+            return `(${prevNumber} * ${p1} / 100)`;
+          }
+          return match;
+        }
+      );
+
+      const sanitizedExpression = expressionWithPercent.replace(
+        /[^-()\d/*+.]/g,
+        ""
+      );
+      const result = new Function(`return ${sanitizedExpression}`)();
+      return result;
+    } catch (error) {
+      setMessage("Invalid expression");
+      return expression;
+    }
+  };
+
+  const handleKeyUp = (e, field) => {
+    if (e.key === "=") {
+      const expression = formData[field];
+      const result = evaluateExpression(expression);
+      setFormData((prev) => ({
+        ...prev,
+        [field]: result,
+      }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    const expression = formData[field];
+    const result = evaluateExpression(expression);
+    setFormData((prev) => ({
+      ...prev,
+      [field]: result,
+    }));
+  };
+
   const handleDateChange = (date, name) => {
     if (date) {
       // Convert to UTC explicitly
@@ -331,6 +383,7 @@ const EditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
+              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>
@@ -507,6 +560,7 @@ const EditCallDetails = () => {
               value={formData.TAT}
               onChange={handleInputChange}
               className="form-input"
+              readOnly
             />
           </div>
 
@@ -584,11 +638,22 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">ID User</label>
+            <label className="form-label">IDU Serial No</label>
             <input
               type="text"
               name="iduser"
               value={formData.iduser}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">ODU Serial No</label>
+            <input
+              type="text"
+              name="oduser"
+              value={formData.oduser}
               onChange={handleInputChange}
               className="form-input"
             />
@@ -613,17 +678,6 @@ const EditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
-            />
-          </div>
-
-          <div>
-            <label className="form-label">OD User</label>
-            <input
-              type="text"
-              name="oduser"
-              value={formData.oduser}
-              onChange={handleInputChange}
-              className="form-input"
             />
           </div>
 
@@ -656,6 +710,8 @@ const EditCallDetails = () => {
               name="receivefromEngineer"
               value={formData.receivefromEngineer}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "receivefromEngineer")}
+              onBlur={() => handleBlur("receivefromEngineer")}
               className="form-input"
             />
             {errors.receivefromEngineer && (
@@ -669,6 +725,8 @@ const EditCallDetails = () => {
               name="commissionow"
               value={formData.commissionow}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "commissionow")}
+              onBlur={() => handleBlur("commissionow")}
               className="form-input"
             />
             {errors.commissionow && (
@@ -684,6 +742,7 @@ const EditCallDetails = () => {
               value={formData.amountReceived}
               onChange={handleInputChange}
               className="form-input"
+              readOnly
             />
           </div>
 
@@ -705,6 +764,8 @@ const EditCallDetails = () => {
               name="serviceChange"
               value={formData.serviceChange}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "serviceChange")}
+              onBlur={() => handleBlur("serviceChange")}
               className="form-input"
             />
             {errors.serviceChange && (
@@ -731,6 +792,8 @@ const EditCallDetails = () => {
               name="incentive"
               value={formData.incentive}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "incentive")}
+              onBlur={() => handleBlur("incentive")}
               className="form-input"
             />
             {errors.incentive && (
@@ -759,6 +822,8 @@ const EditCallDetails = () => {
               name="expenses"
               value={formData.expenses}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "expenses")}
+              onBlur={() => handleBlur("expenses")}
               className="form-input"
             />
 
@@ -774,6 +839,8 @@ const EditCallDetails = () => {
               name="commissioniw"
               value={formData.commissioniw}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "commissioniw")}
+              onBlur={() => handleBlur("commissioniw")}
               className="form-input"
             />
             {errors.commissioniw && (

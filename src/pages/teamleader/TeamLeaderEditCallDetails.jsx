@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
@@ -171,7 +171,6 @@ const TeamLeaderEditCallDetails = () => {
       "warrantyTerms",
       "serviceType",
       "jobStatus",
-      "receivefromEngineer",
     ];
     requiredFields.forEach((field) => {
       if (!formData[field]) {
@@ -182,7 +181,7 @@ const TeamLeaderEditCallDetails = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -202,6 +201,7 @@ const TeamLeaderEditCallDetails = () => {
       );
 
       if (response.status === 200) {
+        navigate(`/teamleader/dashboard/${teamleaderId}`);
         setMessage("Call Details Updated Successfully");
       } else {
         setMessage("Failed to update call details");
@@ -250,6 +250,54 @@ const TeamLeaderEditCallDetails = () => {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+  const evaluateExpression = (expression) => {
+    try {
+      const percentageRegex = /(\d+)(\s?[%])/g;
+      let expressionWithPercent = expression.replace(
+        percentageRegex,
+        (match, p1) => {
+          const prevNumberMatch = expression
+            .slice(0, expression.indexOf(match))
+            .match(/(\d+)(?=\D*$)/);
+          if (prevNumberMatch) {
+            const prevNumber = prevNumberMatch[0];
+            return `(${prevNumber} * ${p1} / 100)`;
+          }
+          return match;
+        }
+      );
+
+      const sanitizedExpression = expressionWithPercent.replace(
+        /[^-()\d/*+.]/g,
+        ""
+      );
+      const result = new Function(`return ${sanitizedExpression}`)();
+      return result;
+    } catch (error) {
+      setMessage("Invalid expression");
+      return expression;
+    }
+  };
+
+  const handleKeyUp = (e, field) => {
+    if (e.key === "=") {
+      const expression = formData[field];
+      const result = evaluateExpression(expression);
+      setFormData((prev) => ({
+        ...prev,
+        [field]: result,
+      }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    const expression = formData[field];
+    const result = evaluateExpression(expression);
+    setFormData((prev) => ({
+      ...prev,
+      [field]: result,
+    }));
+  };
 
   const handleDateChange = (date, name) => {
     if (date) {
@@ -287,6 +335,7 @@ const TeamLeaderEditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
+              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>
@@ -463,6 +512,7 @@ const TeamLeaderEditCallDetails = () => {
               value={formData.TAT}
               onChange={handleInputChange}
               className="form-input"
+              readOnly
             />
           </div>
 
@@ -540,11 +590,22 @@ const TeamLeaderEditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">ID User</label>
+            <label className="form-label">IDU Serial No</label>
             <input
               type="text"
               name="iduser"
               value={formData.iduser}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="form-label">ODU Serial No</label>
+            <input
+              type="text"
+              name="oduser"
+              value={formData.oduser}
               onChange={handleInputChange}
               className="form-input"
             />
@@ -569,17 +630,6 @@ const TeamLeaderEditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
-            />
-          </div>
-
-          <div>
-            <label className="form-label">OD User</label>
-            <input
-              type="text"
-              name="oduser"
-              value={formData.oduser}
-              onChange={handleInputChange}
-              className="form-input"
             />
           </div>
 
@@ -612,6 +662,8 @@ const TeamLeaderEditCallDetails = () => {
               name="receivefromEngineer"
               value={formData.receivefromEngineer}
               onChange={handleInputChange}
+              onKeyUp={(e) => handleKeyUp(e, "receivefromEngineer")}
+              onBlur={() => handleBlur("receivefromEngineer")}
               className="form-input"
             />
             {errors.receivefromEngineer && (

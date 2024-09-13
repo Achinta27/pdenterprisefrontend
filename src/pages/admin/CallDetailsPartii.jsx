@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -203,6 +203,8 @@ const CallDetailsPartii = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -220,6 +222,7 @@ const CallDetailsPartii = () => {
       );
 
       if (response.status === 200) {
+        navigate(`/admin/dashboard`);
         setMessage("Call Details Updated Successfully");
       } else {
         setMessage("Failed to update call details");
