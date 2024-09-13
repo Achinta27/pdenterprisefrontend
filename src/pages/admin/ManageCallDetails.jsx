@@ -30,7 +30,7 @@ const ManageCallDetails = () => {
   const [jobStatusFilter, setJobStatusFilter] = useState(null);
   const [isCommissionFilterActive, setIsCommissionFilterActive] =
     useState(false);
-
+  const [followupfilter, setFollowupfilter] = useState([]);
   const navigate = useNavigate();
 
   const callDetailsPerPage = 50;
@@ -51,7 +51,7 @@ const ManageCallDetails = () => {
   const [mobileNumberFilter, setMobileNumberFilter] = useState("");
   const [showDateFilterButtons, setShowDateFilterButtons] = useState(false); // For showing "Show" and "Cancel" buttons
   const [appliedDateRange, setAppliedDateRange] = useState(null);
-
+  const [searchFilter, setSearchFilter] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
@@ -60,6 +60,18 @@ const ManageCallDetails = () => {
       key: "selection",
     },
   ]);
+
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchFilter(value);
+
+    if (value === "") {
+      setCurrentPage(1);
+      fetchCallDetailsData(1); // Fetch all results when the input is empty
+    } else {
+      setCurrentPage(1); // Reset to first page when filtering
+    }
+  };
 
   useEffect(() => {
     fetchCallDetailsData(currentPage);
@@ -70,11 +82,12 @@ const ManageCallDetails = () => {
     selectedEngineer,
     selectedWarrantyTerm,
     selectedServiceType,
-    mobileNumberFilter,
+    searchFilter,
     isEngineerFilterActive,
     isCommissionFilterActive,
     jobStatusFilter,
     appliedDateRange,
+    followupfilter,
   ]);
 
   const fetchCallDetailsData = async (page) => {
@@ -94,18 +107,19 @@ const ManageCallDetails = () => {
       engineer: selectedEngineer || undefined,
       warrantyTerms: selectedWarrantyTerm || undefined,
       serviceType: selectedServiceType || undefined,
-      mobileNumber: mobileNumberFilter || undefined,
+      number: searchFilter || undefined,
       noEngineer: isEngineerFilterActive ? true : undefined,
       commissionOw: isCommissionFilterActive ? true : undefined,
       notClose: jobStatusFilter === "Not Close" ? true : undefined,
-      followup: jobStatusFilter === "FollowUp" ? true : undefined,
+      followup: followupfilter === "FollowUp" ? true : undefined,
+
       startDate,
       endDate,
     };
 
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get`,
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get?sortBy=gddate`,
         { params }
       );
 
@@ -117,39 +131,6 @@ const ManageCallDetails = () => {
       setLoading(false);
     }
   };
-
-  // const prefetchNextPage = async (nextPage) => {
-  //   const cacheKey = `${nextPage}-${selectedBrand}-${selectedJobStatus}-${selectedEngineer}-${selectedWarrantyTerm}-${selectedServiceType}-${mobileNumberFilter}`;
-
-  //   if (!cachedPages[cacheKey]) {
-  //     try {
-  //       const params = {
-  //         page: nextPage,
-  //         limit: callDetailsPerPage,
-  //         brand: selectedBrand || undefined,
-  //         jobStatus: selectedJobStatus || undefined,
-  //         engineer: selectedEngineer || undefined,
-  //         warrantyTerms: selectedWarrantyTerm || undefined,
-  //         serviceType: selectedServiceType || undefined,
-  //         mobileNumber: mobileNumberFilter || undefined,
-  //         noEngineer: isEngineerFilterActive ? true : undefined,
-  //         commissionOw: isCommissionFilterActive ? true : undefined,
-  //       };
-
-  //       const response = await axios.get(
-  //         `${import.meta.env.VITE_BASE_URL}/api/calldetails/get`,
-  //         { params }
-  //       );
-
-  //       setCachedPages((prevCache) => ({
-  //         ...prevCache,
-  //         [cacheKey]: response.data.data,
-  //       }));
-  //     } catch (error) {
-  //       console.error("Error prefetching next page:", error);
-  //     }
-  //   }
-  // };
 
   const handleBrandChange = (event) => {
     setSelectedBrand(event.target.value);
@@ -290,12 +271,18 @@ const ManageCallDetails = () => {
   };
 
   const handleFollowUpClick = () => {
-    setJobStatusFilter((prevStatus) =>
+    setFollowupfilter((prevStatus) =>
       prevStatus === "FollowUp" ? null : "FollowUp"
     );
-    setCurrentPage(1);
-  };
 
+    // Filter jobs where followupdate is not null
+    const followupfilter = followup.filter(
+      (followup) => followup.followupdate !== null
+    );
+    setFollowupfilter(followupfilter); // update state with filtered jobs
+
+    setCurrentPage(1); // reset to first page if using pagination
+  };
   const handleNotCloseClick = () => {
     setJobStatusFilter((prevStatus) =>
       prevStatus === "Not Close" ? null : "Not Close"
@@ -388,10 +375,10 @@ const ManageCallDetails = () => {
   const headers = [
     "C. Name",
     "Mobile Number",
-    "Location",
-    "Call Date",
-    "Visit Date",
-    "Service Type",
+    "Call No",
+    "Brand",
+    "GD Date",
+    "FollowUp Date",
     "Part II",
     "Action",
   ];
@@ -399,7 +386,11 @@ const ManageCallDetails = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB"); // Formats date as dd/mm/yyyy
+    // Use UTC methods to get the date parts
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const formatKey = (key) => {
@@ -475,7 +466,9 @@ const ManageCallDetails = () => {
           <button
             onClick={handleEngineerFilterClick}
             className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
-              isEngineerFilterActive ? "bg-blue-500 text-white" : "bg-[#EEEEEE]"
+              isEngineerFilterActive
+                ? "bg-blue-500 text-white"
+                : "animate-blink"
             }`}
           >
             Engineer Not Assigned
@@ -483,7 +476,7 @@ const ManageCallDetails = () => {
           <button
             onClick={handleFollowUpClick}
             className={`text-black w-fit font-medium text-wm px-4 py-1 rounded-md shadow-custom ${
-              jobStatusFilter === "FollowUp"
+              followupfilter === "FollowUp"
                 ? "bg-blue-500 text-white"
                 : "bg-[#EEEEEE]"
             }`}
@@ -589,8 +582,8 @@ const ManageCallDetails = () => {
             <input
               type="text"
               placeholder="Search using number"
-              value={mobileNumberFilter}
-              onChange={handleMobileNumberChange}
+              value={searchFilter}
+              onChange={handleSearchChange}
               className="px-4 p-1 border !shadow-custom border-[#cccccc] text-sm rounded-md"
             />
           </div>
@@ -701,17 +694,18 @@ const ManageCallDetails = () => {
                       {detail.contactNumber}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.address}
+                      {detail.callNumber}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {formatDate(detail.callDate)}
+                      {detail.brandName}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {formatDate(detail.visitdate)}
+                      {formatDate(detail.gddate)}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.serviceType}
+                      {formatDate(detail.followupdate)}
                     </div>
+
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 ">
                       <button
                         onClick={() => handleProceedClick(detail.calldetailsId)}

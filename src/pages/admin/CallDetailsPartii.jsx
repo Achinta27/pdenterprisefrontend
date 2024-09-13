@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -23,25 +23,19 @@ const CallDetailsPartii = () => {
   });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [formErrors, setFormErrors] = useState({});
 
   const parseDate = (dateString) => {
     if (!dateString) return null;
-
     const date = new Date(dateString);
     return isNaN(date) ? null : date;
   };
 
-  const sanitizeValue = (value) => {
-    return value || ""; // If the value is null/undefined, return an empty string
-  };
-
   const fetchCallDetailData = async (calldetailsId) => {
     try {
-      console.log("Fetching call details..."); // Add this log
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/get/${calldetailsId}`
       );
-      console.log("Response data:", response.data); // Log response
 
       if (response.data && response.data.data) {
         const callDetail = response.data.data;
@@ -59,13 +53,11 @@ const CallDetailsPartii = () => {
           commissioniw: callDetail.commissioniw || "",
           partamount: callDetail.partamount || "",
         });
-      } else {
-        console.error("API response doesn't have data.");
       }
     } catch (error) {
       console.error("Error fetching call detail:", error);
     } finally {
-      setLoading(false); // Ensure loading is set to false
+      setLoading(false);
     }
   };
 
@@ -74,13 +66,81 @@ const CallDetailsPartii = () => {
       fetchCallDetailData(calldetailsId);
     }
   }, [calldetailsId]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value || "" })); // Ensure empty values are set as ""
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const evaluateExpression = (expression) => {
+    try {
+      const percentageRegex = /(\d+)(\s?[%])/g;
+      let expressionWithPercent = expression.replace(
+        percentageRegex,
+        (match, p1) => {
+          const prevNumberMatch = expression
+            .slice(0, expression.indexOf(match))
+            .match(/(\d+)(?=\D*$)/);
+          if (prevNumberMatch) {
+            const prevNumber = prevNumberMatch[0];
+            return `(${prevNumber} * ${p1} / 100)`;
+          }
+          return match;
+        }
+      );
+
+      const sanitizedExpression = expressionWithPercent.replace(
+        /[^-()\d/*+.]/g,
+        ""
+      );
+      const result = new Function(`return ${sanitizedExpression}`)();
+      return result;
+    } catch (error) {
+      setMessage("Invalid expression");
+      return expression;
+    }
+  };
+
+  const handleKeyUp = (e, field) => {
+    if (e.key === "=") {
+      const expression = formData[field];
+      const result = evaluateExpression(expression);
+      setFormData((prev) => ({
+        ...prev,
+        [field]: result,
+      }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    const expression = formData[field];
+    const result = evaluateExpression(expression);
+    setFormData((prev) => ({
+      ...prev,
+      [field]: result,
+    }));
   };
 
   const handleDateChange = (date, name) => {
-    setFormData((prev) => ({ ...prev, [name]: date }));
+    if (date) {
+      // Convert the selected date to UTC to prevent timezone-related shifts
+      const utcDate = new Date(
+        Date.UTC(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          0,
+          0,
+          0,
+          0
+        )
+      );
+
+      setFormData((prev) => ({ ...prev, [name]: utcDate }));
+    }
   };
 
   useEffect(() => {
@@ -97,7 +157,7 @@ const CallDetailsPartii = () => {
 
     setFormData((prev) => ({
       ...prev,
-      totalAmount: calculatedTotalAmount.toFixed(2), // Calculate and set totalAmount
+      totalAmount: calculatedTotalAmount.toFixed(2),
     }));
   }, [
     formData.serviceChange,
@@ -108,11 +168,49 @@ const CallDetailsPartii = () => {
     formData.commissioniw,
   ]);
 
+  useEffect(() => {
+    const { receivefromEngineer, commissionow } = formData;
+
+    const calculatedAmountRecived =
+      (parseFloat(receivefromEngineer) || 0) - (parseFloat(commissionow) || 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      amountReceived: calculatedAmountRecived.toFixed(2),
+    }));
+  }, [formData.receivefromEngineer, formData.commissionow]);
+
+  const validateForm = () => {
+    const errors = {};
+    const requiredFields = [
+      "receivefromEngineer",
+      "commissionow",
+      "serviceChange",
+      "NPS",
+      "incentive",
+      "approval",
+      "expenses",
+      "commissioniw",
+    ];
+
+    requiredFields.forEach((field) => {
+      if (!formData[field]) {
+        errors[field] = "This field is required";
+      }
+    });
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-    setLoading(true);
+    if (!validateForm()) {
+      return;
+    }
 
+    setLoading(true);
     try {
       const response = await axios.put(
         `${
@@ -138,133 +236,184 @@ const CallDetailsPartii = () => {
     <AdminDashboardTemplate>
       <div className="p-6">
         {loading ? (
-          <p>Loading...</p> // Show loading state
+          <p>Loading...</p>
         ) : (
           <form
             onSubmit={handleSubmit}
             className="grid grid-cols-2 gap-6 w-full"
           >
             <div>
-              <label className="form-label">Receive from Engineer</label>
+              <label className="form-label">
+                Receive from Engineer (Calculate)
+              </label>
               <input
                 type="text"
                 name="receivefromEngineer"
                 value={formData.receivefromEngineer}
                 onChange={handleInputChange}
+                onKeyUp={(e) => handleKeyUp(e, "receivefromEngineer")}
+                onBlur={() => handleBlur("receivefromEngineer")}
                 className="form-input"
               />
+              {formErrors.receivefromEngineer && (
+                <p className="mt-1 text-red-500">
+                  {formErrors.receivefromEngineer}
+                </p>
+              )}
             </div>
+
+            <div>
+              <label className="form-label">Commission OW (Calculate)</label>
+              <input
+                type="text"
+                name="commissionow"
+                value={formData.commissionow}
+                onChange={handleInputChange}
+                onKeyUp={(e) => handleKeyUp(e, "commissionow")}
+                onBlur={() => handleBlur("commissionow")}
+                className="form-input"
+              />
+              {formErrors.commissionow && (
+                <p className="mt-1 text-red-500">{formErrors.commissionow}</p>
+              )}
+            </div>
+
             <div>
               <label className="form-label">Amount Received</label>
               <input
                 type="text"
                 name="amountReceived"
                 value={formData.amountReceived}
-                onChange={handleInputChange}
                 className="form-input"
+                readOnly
               />
             </div>
-            <div>
-              <label className="form-label">Commission OW</label>
-              <input
-                type="text"
-                name="commissionow"
-                value={formData.commissionow} // Set value from formData
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
-            <div>
-              <label className="form-label">Service Change</label>
-              <input
-                type="text"
-                name="serviceChange"
-                value={formData.serviceChange} // Set value from formData
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
+
             <div>
               <label className="form-label">Commission Date</label>
               <DatePicker
-                selected={formData.commissionDate} // Display the date if available
+                selected={formData.commissionDate}
                 onChange={(date) => handleDateChange(date, "commissionDate")}
                 className="form-input"
                 dateFormat="yyyy-MM-dd"
               />
             </div>
+
+            <div>
+              <label className="form-label">Service Charges (Calculate)</label>
+              <input
+                type="text"
+                name="serviceChange"
+                value={formData.serviceChange}
+                onChange={handleInputChange}
+                onKeyUp={(e) => handleKeyUp(e, "serviceChange")}
+                onBlur={() => handleBlur("serviceChange")}
+                className="form-input"
+              />
+              {formErrors.serviceChange && (
+                <p className="mt-1 text-red-500">{formErrors.serviceChange}</p>
+              )}
+            </div>
+
             <div>
               <label className="form-label">NPS</label>
               <input
                 type="text"
                 name="NPS"
-                value={formData.NPS} // Set value from formData
+                value={formData.NPS}
                 onChange={handleInputChange}
                 className="form-input"
               />
+              {formErrors.NPS && (
+                <p className="mt-1 text-red-500">{formErrors.NPS}</p>
+              )}
             </div>
+
             <div>
-              <label className="form-label">Incentive</label>
+              <label className="form-label">Incentive (Calculate)</label>
               <input
                 type="text"
                 name="incentive"
-                value={formData.incentive} // Set value from formData
+                value={formData.incentive}
                 onChange={handleInputChange}
+                onKeyUp={(e) => handleKeyUp(e, "incentive")}
+                onBlur={() => handleBlur("incentive")}
                 className="form-input"
               />
+              {formErrors.incentive && (
+                <p className="mt-1 text-red-500">{formErrors.incentive}</p>
+              )}
             </div>
-            <div>
-              <label className="form-label">Expenses</label>
-              <input
-                type="text"
-                name="expenses"
-                value={formData.expenses} // Set value from formData
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
+
             <div>
               <label className="form-label">Approval</label>
               <input
                 type="text"
                 name="approval"
-                value={formData.approval} // Set value from formData
+                value={formData.approval}
                 onChange={handleInputChange}
                 className="form-input"
               />
+              {formErrors.approval && (
+                <p className="mt-1 text-red-500">{formErrors.approval}</p>
+              )}
             </div>
+
+            <div>
+              <label className="form-label">Expenses (Calculate)</label>
+              <input
+                type="text"
+                name="expenses"
+                value={formData.expenses}
+                onChange={handleInputChange}
+                onKeyUp={(e) => handleKeyUp(e, "expenses")}
+                onBlur={() => handleBlur("expenses")}
+                className="form-input"
+              />
+              {formErrors.expenses && (
+                <p className="mt-1 text-red-500">{formErrors.expenses}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="form-label">Commission IW (Calculate)</label>
+              <input
+                type="text"
+                name="commissioniw"
+                value={formData.commissioniw}
+                onChange={handleInputChange}
+                onKeyUp={(e) => handleKeyUp(e, "commissioniw")}
+                onBlur={() => handleBlur("commissioniw")}
+                className="form-input"
+              />
+              {formErrors.commissioniw && (
+                <p className="mt-1 text-red-500">{formErrors.commissioniw}</p>
+              )}
+            </div>
+
             <div>
               <label className="form-label">Total Amount</label>
               <input
                 type="text"
                 name="totalAmount"
-                value={formData.totalAmount} // Set value from formData
-                onChange={handleInputChange}
+                value={formData.totalAmount}
                 className="form-input"
                 readOnly
               />
             </div>
-            <div>
-              <label className="form-label">Commission IW</label>
-              <input
-                type="text"
-                name="commissioniw"
-                value={formData.commissioniw} // Set value from formData
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
+
             <div>
               <label className="form-label">Part Amount</label>
               <input
                 type="text"
                 name="partamount"
-                value={formData.partamount} // Set value from formData
+                value={formData.partamount}
                 onChange={handleInputChange}
                 className="form-input"
               />
             </div>
-            <div className=" mt-4">
+
+            <div className="mt-4 flex items-center gap-4">
               <button
                 type="submit"
                 className="form-submit xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] !h-[3.5rem]"
@@ -273,6 +422,15 @@ const CallDetailsPartii = () => {
                 {loading ? "Submitting..." : "Submit"}
               </button>
               {message && <p className="mt-4">{message}</p>}
+
+              <div className="xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] ">
+                <Link
+                  to={"/admin/manage-calldetails"}
+                  className="text-black bg-[#EEEEEE] font-medium flex justify-center items-center px-4 py-2 rounded-md shadow-custom w-full h-[3.5rem]"
+                >
+                  Cancel
+                </Link>
+              </div>
             </div>
           </form>
         )}

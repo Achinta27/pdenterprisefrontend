@@ -29,7 +29,7 @@
   height: 20px;
   background-color: #ccc;
   border-radius: 2px;
-  animation: blink 1.5s infinite ease-in-out;
+  animation: blink-grey 1.5s infinite ease-in-out;
 }
 
 .line:nth-child(1) {
@@ -44,7 +44,7 @@
   animation-delay: 0.6s;
 }
 
-@keyframes blink {
+@keyframes blink-grey {
   0% {
     background-color: #ccc;
   }
@@ -58,4 +58,23 @@
 
 .boxsh {
   box-shadow: rgba(0, 0, 0, 0.35) 0px 2px 7px;
+}
+
+@keyframes blink {
+  0% {
+    background-color: #eeeeee;
+    color: black;
+  }
+  50% {
+    background-color: #5671fa;
+    color: white;
+  }
+  100% {
+    background-color: #eeeeee;
+    color: black;
+  }
+}
+
+.animate-blink {
+  animation: blink 2s infinite;
 }

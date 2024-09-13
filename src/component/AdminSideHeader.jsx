@@ -52,8 +52,7 @@ const AdminSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
     {
       icon: "/images/broadcast.svg",
       name: "WA Broadcast",
-
-      links: [{ name: "WA Technician", link: "" }],
+      link: "/admin/wa-brodcast",
     },
     {
       icon: "/images/user.svg",

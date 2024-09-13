@@ -160,7 +160,6 @@ const TeamLeaderCallEntry = () => {
           engineer: "",
           productsName: "",
           warrantyTerms: "",
-          TAT: "",
           serviceType: "",
           remarks: "",
           parts: "",
@@ -209,7 +208,26 @@ const TeamLeaderCallEntry = () => {
   };
 
   const handleDateChange = (date, name) => {
-    setFormData((prev) => ({ ...prev, [name]: date }));
+    if (date) {
+      // Convert to UTC explicitly
+      const utcDate = new Date(
+        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+      );
+
+      if (name === "callDate") {
+        const TAT = calculateTAT(utcDate);
+        setFormData((prev) => ({
+          ...prev,
+          [name]: utcDate,
+          TAT: TAT,
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: utcDate }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: null }));
+    }
+
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 

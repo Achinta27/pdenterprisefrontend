@@ -17,6 +17,8 @@ import AddAndManageUser from "./pages/admin/AddAndManageUser";
 import LoginPage from "./pages/LoginPage";
 import TeamleaderDashboard from "./pages/teamleader/TeamleaderDashboard";
 import TeamLeaderCallEntry from "./pages/teamleader/TeamLeaderCallEntry";
+import TeamLeaderEditCallDetails from "./pages/teamleader/TeamLeaderEditCallDetails";
+import WaBrodcast from "./pages/admin/WaBrodcast";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -69,6 +71,7 @@ function App() {
           path="/admin/add-and-manage-user"
           element={<AddAndManageUser />}
         />
+        <Route path="/admin/wa-brodcast" element={<WaBrodcast />} />
 
         {/* teamleader */}
         <Route
@@ -78,6 +81,10 @@ function App() {
         <Route
           path="/teamleader/add-calldetails/:teamleaderId"
           element={<TeamLeaderCallEntry />}
+        />
+        <Route
+          path="/teamleader/edit-calldetails/:teamleaderId/:calldetailsId"
+          element={<TeamLeaderEditCallDetails />}
         />
       </Routes>
     </BrowserRouter>

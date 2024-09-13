@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Link, useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
-import { useNavigate } from "react-router-dom";
+import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
 
-const AddCallDetails = () => {
+const TeamLeaderEditCallDetails = () => {
+  const { calldetailsId, teamleaderId } = useParams();
   const [formData, setFormData] = useState({
     callDate: null,
     visitdate: null,
@@ -32,6 +33,17 @@ const AddCallDetails = () => {
     followupdate: null,
     gddate: null,
     receivefromEngineer: "",
+    amountReceived: "",
+    commissionow: "",
+    serviceChange: "",
+    commissionDate: null,
+    NPS: "",
+    incentive: "",
+    expenses: "",
+    approval: "",
+    totalAmount: "",
+    commissioniw: "",
+    partamount: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -46,7 +58,8 @@ const AddCallDetails = () => {
 
   useEffect(() => {
     fetchDropdownData();
-  }, []);
+    fetchCallDetail();
+  }, [calldetailsId]);
 
   const fetchDropdownData = async () => {
     try {
@@ -77,6 +90,56 @@ const AddCallDetails = () => {
     }
   };
 
+  const parseDate = (dateString) => {
+    // If dateString is empty, return null
+    if (!dateString) return null;
+    // If dateString is already in ISO format, convert it to a Date object
+    const date = new Date(dateString);
+    // Ensure it's a valid date before returning
+    return isNaN(date) ? null : date;
+  };
+
+  const fetchCallDetail = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get/${calldetailsId}`
+      );
+      const callDetail = response.data.data;
+
+      // Pre-fill the form with the call details from the backend
+      setFormData({
+        callDate: parseDate(callDetail.callDate),
+        visitdate: parseDate(callDetail.visitdate),
+        callNumber: callDetail.callNumber,
+        brandName: callDetail.brandName,
+        customerName: callDetail.customerName,
+        address: callDetail.address,
+        route: callDetail.route,
+        contactNumber: callDetail.contactNumber,
+        whatsappNumber: callDetail.whatsappNumber,
+        engineer: callDetail.engineer,
+        productsName: callDetail.productsName,
+        warrantyTerms: callDetail.warrantyTerms,
+        TAT: callDetail.TAT,
+        serviceType: callDetail.serviceType,
+        remarks: callDetail.remarks,
+        parts: callDetail.parts,
+        jobStatus: callDetail.jobStatus,
+        modelNumber: callDetail.modelNumber,
+        iduser: callDetail.iduser,
+        closerCode: callDetail.closerCode,
+        dateofPurchase: parseDate(callDetail.dateofPurchase),
+        oduser: callDetail.oduser,
+        followupdate: parseDate(callDetail.followupdate),
+        gddate: parseDate(callDetail.gddate),
+        receivefromEngineer: callDetail.receivefromEngineer,
+        amountReceived: callDetail.amountReceived,
+      });
+    } catch (error) {
+      console.error("Error fetching call detail:", error);
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     let formValid = true;
@@ -98,7 +161,6 @@ const AddCallDetails = () => {
       formValid = false;
     }
 
-    // Required fields validation
     const requiredFields = [
       "callDate",
       "callNumber",
@@ -109,23 +171,17 @@ const AddCallDetails = () => {
       "warrantyTerms",
       "serviceType",
       "jobStatus",
+      "receivefromEngineer",
     ];
-
     requiredFields.forEach((field) => {
       if (!formData[field]) {
         newErrors[field] = "This field is required";
-        formValid = false;
       }
     });
 
-    // Set the errors state
     setErrors(newErrors);
-
-    // Return whether the form is valid
-    return formValid && Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0;
   };
-
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -138,81 +194,61 @@ const AddCallDetails = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/calldetails/create`,
+      const response = await axios.patch(
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/api/calldetails/update/${calldetailsId}`,
         formData
       );
 
-      if (response.status === 201) {
-        setMessage("Call Details Created Successfully");
-        navigate(`/admin/manage-calldetails`);
-        setFormData({
-          callDate: null,
-          visitdate: null,
-          callNumber: "",
-          brandName: "",
-          customerName: "",
-          address: "",
-          route: "",
-          contactNumber: "",
-          whatsappNumber: "",
-          engineer: "",
-          productsName: "",
-          warrantyTerms: "",
-
-          serviceType: "",
-          remarks: "",
-          parts: "",
-          jobStatus: "",
-          modelNumber: "",
-          iduser: "",
-          closerCode: "",
-          dateofPurchase: null,
-          oduser: "",
-          followupdate: null,
-          gddate: null,
-          receivefromEngineer: "",
-        });
-        setErrors({});
+      if (response.status === 200) {
+        setMessage("Call Details Updated Successfully");
       } else {
-        setMessage("Failed to create call details");
+        setMessage("Failed to update call details");
       }
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.error) {
-        // Assuming the error response provides the field that caused the error
-        const errorField = Object.keys(error.response.data.error)[0];
-        setErrors((prev) => ({
-          ...prev,
-          [errorField]: error.response.data.error,
-        }));
-      } else {
-        console.error("Error creating call details:", error);
-      }
+      console.error("Error updating call details:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const { serviceChange, incentive, NPS, approval, expenses, commissioniw } =
+      formData;
+
+    const calculatedTotalAmount =
+      (parseFloat(serviceChange) || 0) +
+      (parseFloat(incentive) || 0) +
+      (parseFloat(NPS) || 0) +
+      (parseFloat(approval) || 0) -
+      (parseFloat(expenses) || 0) -
+      (parseFloat(commissioniw) || 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      totalAmount: calculatedTotalAmount.toFixed(2), // Calculate and set totalAmount
+    }));
+  }, [
+    formData.serviceChange,
+    formData.incentive,
+    formData.NPS,
+    formData.approval,
+    formData.expenses,
+    formData.commissioniw,
+  ]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     if (name === "contactNumber" || name === "whatsappNumber") {
       if (value.length <= 10 && /^\d*$/.test(value)) {
         setFormData((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => ({ ...prev, [name]: "" }));
+        setErrors((prev) => ({ ...prev, [name]: "" })); // Reset errors when input is valid
       }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  };
-
-  const calculateTAT = (callDate) => {
-    const today = new Date();
-    const dateDifference = Math.ceil(
-      (today - callDate) / (1000 * 60 * 60 * 24)
-    );
-    return dateDifference > 0 ? dateDifference : 1;
   };
 
   const handleDateChange = (date, name) => {
@@ -240,7 +276,7 @@ const AddCallDetails = () => {
   };
 
   return (
-    <AdminDashboardTemplate>
+    <TeamLeaderDashboardTemplate>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6 w-full">
           <div className="w-full">
@@ -250,6 +286,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "callDate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              isClearable
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>
@@ -261,6 +298,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "visitdate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              isClearable
             />
           </div>
 
@@ -342,7 +380,6 @@ const AddCallDetails = () => {
               value={formData.contactNumber}
               onChange={handleInputChange}
               className="form-input"
-              maxLength={10}
             />
             {errors.contactNumber && (
               <p className="form-error">{errors.contactNumber}</p>
@@ -357,7 +394,6 @@ const AddCallDetails = () => {
               value={formData.whatsappNumber}
               onChange={handleInputChange}
               className="form-input"
-              maxLength={10}
             />
           </div>
 
@@ -420,14 +456,13 @@ const AddCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">TAT (Turnaround Time)</label>
+            <label className="form-label">TAT</label>
             <input
               type="text"
               name="TAT"
               value={formData.TAT}
               onChange={handleInputChange}
               className="form-input"
-              readOnly
             />
           </div>
 
@@ -533,6 +568,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "dateofPurchase")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              isClearable
             />
           </div>
 
@@ -554,6 +590,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "followupdate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              isClearable
             />
           </div>
 
@@ -564,6 +601,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "gddate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              isClearable
             />
           </div>
 
@@ -576,22 +614,35 @@ const AddCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
+            {errors.receivefromEngineer && (
+              <p className="mt-1 text-red-500">{errors.receivefromEngineer}</p>
+            )}
           </div>
 
-          <div className=" mt-4">
-            <button
-              type="submit"
-              className="form-submit xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] !h-[3.5rem]"
-              disabled={loading}
-            >
-              {loading ? "Submitting..." : "Submit"}
-            </button>
-            {message && <p className="mt-4">{message}</p>}
+          <div className="flex flex-row gap-4 w-full items-center">
+            <div className="xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] mt-4">
+              <button
+                type="submit"
+                className="form-submit !w-full !h-[3.5rem]"
+                disabled={loading}
+              >
+                {loading ? "Submitting..." : "Submit"}
+              </button>
+              {message && <p className="mt-4">{message}</p>}
+            </div>
+            <div className="xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] mt-4">
+              <Link
+                to={`/teamleader/dashboard/${teamleaderId}`}
+                className="text-black bg-[#EEEEEE] font-medium flex justify-center items-center px-4 py-2 rounded-md shadow-custom w-full h-[3.5rem]"
+              >
+                Cancel
+              </Link>
+            </div>
           </div>
         </form>
       </div>
-    </AdminDashboardTemplate>
+    </TeamLeaderDashboardTemplate>
   );
 };
 
-export default AddCallDetails;
+export default TeamLeaderEditCallDetails;

@@ -91,12 +91,20 @@ const EditCallDetails = () => {
   };
 
   const parseDate = (dateString) => {
-    // If dateString is empty, return null
     if (!dateString) return null;
-    // If dateString is already in ISO format, convert it to a Date object
+
     const date = new Date(dateString);
-    // Ensure it's a valid date before returning
-    return isNaN(date) ? null : date;
+
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    const utcDate = new Date(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate()
+    );
+
+    return utcDate;
   };
 
   const fetchCallDetail = async () => {
@@ -106,7 +114,6 @@ const EditCallDetails = () => {
       );
       const callDetail = response.data.data;
 
-      // Pre-fill the form with the call details from the backend
       setFormData({
         callDate: parseDate(callDetail.callDate),
         visitdate: parseDate(callDetail.visitdate),
@@ -181,6 +188,14 @@ const EditCallDetails = () => {
       "warrantyTerms",
       "serviceType",
       "jobStatus",
+      "receivefromEngineer",
+      "commissionow",
+      "serviceChange",
+      "NPS",
+      "incentive",
+      "approval",
+      "expenses",
+      "commissioniw",
     ];
     requiredFields.forEach((field) => {
       if (!formData[field]) {
@@ -247,6 +262,18 @@ const EditCallDetails = () => {
     formData.commissioniw,
   ]);
 
+  useEffect(() => {
+    const { receivefromEngineer, commissionow } = formData;
+
+    const calculatedAmountRecived =
+      (parseFloat(receivefromEngineer) || 0) - (parseFloat(commissionow) || 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      amountReceived: calculatedAmountRecived.toFixed(2),
+    }));
+  }, [formData.receivefromEngineer, formData.commissionow]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "contactNumber" || name === "whatsappNumber") {
@@ -260,8 +287,35 @@ const EditCallDetails = () => {
     }
   };
 
+  const calculateTAT = (callDate) => {
+    const today = new Date();
+    const dateDifference = Math.ceil(
+      (today - callDate) / (1000 * 60 * 60 * 24)
+    );
+    return dateDifference > 0 ? dateDifference : 1; // Minimum TAT should be 1
+  };
+
   const handleDateChange = (date, name) => {
-    setFormData((prev) => ({ ...prev, [name]: date }));
+    if (date) {
+      // Convert to UTC explicitly
+      const utcDate = new Date(
+        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+      );
+
+      if (name === "callDate") {
+        const TAT = calculateTAT(utcDate);
+        setFormData((prev) => ({
+          ...prev,
+          [name]: utcDate,
+          TAT: TAT,
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: utcDate }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: null }));
+    }
+
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -604,19 +658,10 @@ const EditCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
+            {errors.receivefromEngineer && (
+              <p className="mt-1 text-red-500">{errors.receivefromEngineer}</p>
+            )}
           </div>
-
-          <div>
-            <label className="form-label">Amount Received</label>
-            <input
-              type="text"
-              name="amountReceived"
-              value={formData.amountReceived}
-              onChange={handleInputChange}
-              className="form-input"
-            />
-          </div>
-
           <div>
             <label className="form-label">Commission OW</label>
             <input
@@ -626,14 +671,17 @@ const EditCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
+            {errors.commissionow && (
+              <p className="mt-1 text-red-500">{errors.commissionow}</p>
+            )}
           </div>
 
           <div>
-            <label className="form-label">Service Charge</label>
+            <label className="form-label">Amount Received</label>
             <input
               type="text"
-              name="serviceChange"
-              value={formData.serviceChange}
+              name="amountReceived"
+              value={formData.amountReceived}
               onChange={handleInputChange}
               className="form-input"
             />
@@ -651,6 +699,20 @@ const EditCallDetails = () => {
           </div>
 
           <div>
+            <label className="form-label">Service Charge</label>
+            <input
+              type="text"
+              name="serviceChange"
+              value={formData.serviceChange}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+            {errors.serviceChange && (
+              <p className="mt-1 text-red-500">{errors.serviceChange}</p>
+            )}
+          </div>
+
+          <div>
             <label className="form-label">NPS</label>
             <input
               type="text"
@@ -659,6 +721,7 @@ const EditCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
+            {errors.NPS && <p className="mt-1 text-red-500">{errors.NPS}</p>}
           </div>
 
           <div>
@@ -670,17 +733,9 @@ const EditCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
-          </div>
-
-          <div>
-            <label className="form-label">Expenses</label>
-            <input
-              type="text"
-              name="expenses"
-              value={formData.expenses}
-              onChange={handleInputChange}
-              className="form-input"
-            />
+            {errors.incentive && (
+              <p className="mt-1 text-red-500">{errors.incentive}</p>
+            )}
           </div>
 
           <div>
@@ -692,17 +747,24 @@ const EditCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
+            {errors.approval && (
+              <p className="mt-1 text-red-500">{errors.approval}</p>
+            )}
           </div>
 
           <div>
-            <label className="form-label">Total Amount</label>
+            <label className="form-label">Expenses</label>
             <input
               type="text"
-              name="totalAmount"
-              value={formData.totalAmount}
+              name="expenses"
+              value={formData.expenses}
               onChange={handleInputChange}
               className="form-input"
             />
+
+            {errors.expenses && (
+              <p className="mt-1 text-red-500">{errors.expenses}</p>
+            )}
           </div>
 
           <div>
@@ -711,6 +773,20 @@ const EditCallDetails = () => {
               type="text"
               name="commissioniw"
               value={formData.commissioniw}
+              onChange={handleInputChange}
+              className="form-input"
+            />
+            {errors.commissioniw && (
+              <p className="mt-1 text-red-500">{errors.commissioniw}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label">Total Amount</label>
+            <input
+              type="text"
+              name="totalAmount"
+              value={formData.totalAmount}
               onChange={handleInputChange}
               className="form-input"
             />

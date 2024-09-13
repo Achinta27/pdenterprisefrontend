@@ -3,6 +3,8 @@ import axios from "axios";
 import { FiEye, FiEdit } from "react-icons/fi";
 
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import LoadingAnimation from "../../component/LoadingAnimation";
 import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
@@ -12,6 +14,8 @@ import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
+import { GrCopy } from "react-icons/gr";
+import { MdFileCopy } from "react-icons/md";
 
 const TeamleaderDashboard = () => {
   const [callDetails, setCallDetails] = useState([]);
@@ -93,9 +97,7 @@ const TeamleaderDashboard = () => {
 
     try {
       const response = await axios.get(
-        `${
-          import.meta.env.VITE_BASE_URL
-        }/api/calldetails/get?teamleaderId=${teamleaderId}`,
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get`,
         { params }
       );
 
@@ -271,17 +273,21 @@ const TeamleaderDashboard = () => {
   const headers = [
     "C. Name",
     "Mobile Number",
-    "Location",
-    "Call Date",
     "Visit Date",
-    "Service Type",
+    "GD Date",
+    "Route",
+    "Brand",
     "Action",
   ];
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB"); // Formats date as dd/mm/yyyy
+    // Use UTC methods to get the date parts
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const formatKey = (key) => {
@@ -296,6 +302,10 @@ const TeamleaderDashboard = () => {
       return formatDate(value);
     }
     return value;
+  };
+  const navigate = useNavigate();
+  const handleEditClick = (calldetailsId) => {
+    navigate(`/teamleader/edit-calldetails/${teamleaderId}/${calldetailsId}`);
   };
 
   const fieldsToDisplay = [
@@ -325,6 +335,23 @@ const TeamleaderDashboard = () => {
     "serviceType",
     "remarks",
   ];
+
+  const handleCopy = (callDetails) => {
+    const calldetailsText = `Customer Name: ${callDetails.customerName}\nContact Number: ${callDetails.contactNumber}\nBrand: ${callDetails.brandName}\nCall Number: ${callDetails.callNumber}\nAddress: ${callDetails.address}\nRoute: ${callDetails.route}
+    \nProduct Name: ${callDetails.productsName}\nWarranty Terms:${callDetails.warrantyTerms}\nService Type:${callDetails.serviceType}`;
+
+    navigator.clipboard
+      .writeText(calldetailsText)
+      .then(() => {
+        toast.success("Lead copied to clipboard", {
+          position: "bottom-center",
+          icon: "✅",
+        });
+      })
+      .catch((error) => {
+        console.error("Error copying lead:", error);
+      });
+  };
 
   return (
     <TeamLeaderDashboardTemplate>
@@ -487,7 +514,7 @@ const TeamleaderDashboard = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col h-[50vh] no-scrollbar bg-white overflow-auto">
+              <div className="flex flex-col h-[60vh] no-scrollbar bg-white overflow-auto">
                 {callDetails.map((detail) => (
                   <div
                     className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-base w-full"
@@ -500,16 +527,17 @@ const TeamleaderDashboard = () => {
                       {detail.contactNumber}
                     </div>
                     <div className="text-sm font-semibold flex-1">
-                      {detail.address}
-                    </div>
-                    <div className="text-sm font-semibold flex-1">
-                      {formatDate(detail.callDate)}
-                    </div>
-                    <div className="text-sm font-semibold flex-1">
                       {formatDate(detail.visitdate)}
                     </div>
                     <div className="text-sm font-semibold flex-1">
-                      {detail.serviceType}
+                      {formatDate(detail.gddate)}
+                    </div>
+                    <div className="text-sm font-semibold flex-1">
+                      {detail.route}
+                    </div>
+
+                    <div className="text-sm font-semibold flex-1">
+                      {detail.brandName}
                     </div>
 
                     <div className="flex flex-row flex-1 items-center font-semibold gap-5">
@@ -519,6 +547,18 @@ const TeamleaderDashboard = () => {
                       >
                         <FiEye />
                       </button>
+                      <button
+                        className="text-yellow-500"
+                        onClick={() => handleEditClick(detail.calldetailsId)}
+                      >
+                        <FiEdit />
+                      </button>
+                      <div
+                        onClick={() => handleCopy(detail)}
+                        className=" cursor-pointer text-[#c33434]"
+                      >
+                        <MdFileCopy />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -581,6 +621,7 @@ const TeamleaderDashboard = () => {
           </div>
         )}
       </div>
+      <ToastContainer />
     </TeamLeaderDashboardTemplate>
   );
 };
