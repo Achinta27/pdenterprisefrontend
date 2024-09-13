@@ -48,6 +48,12 @@ const TeamleaderDashboard = () => {
   const [appliedDateRange, setAppliedDateRange] = useState(null);
   const [searchFilter, setSearchFilter] = useState("");
 
+  const [isEngineerFilterActive, setIsEngineerFilterActive] = useState(false);
+  const [jobStatusFilter, setJobStatusFilter] = useState(null);
+  const [isCommissionFilterActive, setIsCommissionFilterActive] =
+    useState(false);
+  const [followupfilter, setFollowupfilter] = useState([]);
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
@@ -71,6 +77,10 @@ const TeamleaderDashboard = () => {
     selectedServiceType,
     appliedDateRange,
     teamleaderId,
+    isEngineerFilterActive,
+    isCommissionFilterActive,
+    jobStatusFilter,
+    followupfilter,
   ]);
 
   const fetchCallDetailsData = async (page) => {
@@ -92,6 +102,10 @@ const TeamleaderDashboard = () => {
       warrantyTerms: selectedWarrantyTerm || undefined,
       serviceType: selectedServiceType || undefined,
       number: searchFilter || undefined,
+      noEngineer: isEngineerFilterActive ? true : undefined,
+      commissionOw: isCommissionFilterActive ? true : undefined,
+      notClose: jobStatusFilter === "Not Close" ? true : undefined,
+      followup: followupfilter === "FollowUp" ? true : undefined,
       startDate,
       endDate,
     };
@@ -151,10 +165,13 @@ const TeamleaderDashboard = () => {
     setSearchFilter(value);
 
     if (value === "") {
+      // When the search filter is cleared, fetch all data
       setCurrentPage(1);
-      fetchCallDetailsData(1); // Fetch all results when the input is empty
+      fetchCallDetailsData(1, true); // Pass an additional flag to reset filters
     } else {
-      setCurrentPage(1); // Reset to first page when filtering
+      // When search filter is applied
+      setCurrentPage(1);
+      fetchCallDetailsData(1); // Fetch data based on the search filter
     }
   };
 
@@ -320,6 +337,36 @@ const TeamleaderDashboard = () => {
     navigate(`/teamleader/edit-calldetails/${teamleaderId}/${calldetailsId}`);
   };
 
+  const handleEngineerFilterClick = () => {
+    setIsEngineerFilterActive((prevState) => !prevState);
+    setCurrentPage(1);
+  };
+
+  const handleCommissionFilterClick = () => {
+    setIsCommissionFilterActive((prevState) => !prevState);
+    setCurrentPage(1);
+  };
+
+  const handleFollowUpClick = () => {
+    setFollowupfilter((prevStatus) =>
+      prevStatus === "FollowUp" ? null : "FollowUp"
+    );
+
+    // Filter jobs where followupdate is not null
+    const followupfilter = followup.filter(
+      (followup) => followup.followupdate !== null
+    );
+    setFollowupfilter(followupfilter); // update state with filtered jobs
+
+    setCurrentPage(1); // reset to first page if using pagination
+  };
+  const handleNotCloseClick = () => {
+    setJobStatusFilter((prevStatus) =>
+      prevStatus === "Not Close" ? null : "Not Close"
+    );
+    setCurrentPage(1);
+  };
+
   const fieldsToDisplay = [
     "customerName",
     "contactNumber",
@@ -368,6 +415,50 @@ const TeamleaderDashboard = () => {
   return (
     <TeamLeaderDashboardTemplate>
       <div className="flex flex-col gap-8">
+        <div className="flex flex-wrap gap-6">
+          <button
+            onClick={handleEngineerFilterClick}
+            className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
+              isEngineerFilterActive
+                ? "bg-blue-500 text-white"
+                : "animate-blink"
+            }`}
+          >
+            Engineer Not Assigned
+          </button>
+          <button
+            onClick={handleFollowUpClick}
+            className={`text-black w-fit font-medium text-wm px-4 py-1 rounded-md shadow-custom ${
+              followupfilter === "FollowUp"
+                ? "bg-blue-500 text-white"
+                : "bg-[#EEEEEE]"
+            }`}
+          >
+            FollowUp
+          </button>
+
+          <button
+            onClick={handleNotCloseClick}
+            className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
+              jobStatusFilter === "Not Close"
+                ? "bg-blue-500 text-white"
+                : "bg-[#EEEEEE]"
+            }`}
+          >
+            Not Close
+          </button>
+
+          <button
+            onClick={handleCommissionFilterClick}
+            className={`text-black w-fit font-medium  text-sm px-4 py-1 rounded-md shadow-custom ${
+              isCommissionFilterActive
+                ? "bg-blue-500 text-white"
+                : "bg-[#EEEEEE]"
+            }`}
+          >
+            Commission OW
+          </button>
+        </div>
         <div className="flex flex-wrap gap-4">
           <div className="relative">
             <input

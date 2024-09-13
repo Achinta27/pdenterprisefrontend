@@ -49,7 +49,7 @@ const ManageCallDetails = () => {
   const [selectedWarrantyTerm, setSelectedWarrantyTerm] = useState("");
   const [selectedServiceType, setSelectedServiceType] = useState("");
   const [mobileNumberFilter, setMobileNumberFilter] = useState("");
-  const [showDateFilterButtons, setShowDateFilterButtons] = useState(false); // For showing "Show" and "Cancel" buttons
+  const [showDateFilterButtons, setShowDateFilterButtons] = useState(false);
   const [appliedDateRange, setAppliedDateRange] = useState(null);
   const [searchFilter, setSearchFilter] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -67,9 +67,10 @@ const ManageCallDetails = () => {
 
     if (value === "") {
       setCurrentPage(1);
-      fetchCallDetailsData(1); // Fetch all results when the input is empty
+      fetchCallDetailsData(1, true);
     } else {
-      setCurrentPage(1); // Reset to first page when filtering
+      setCurrentPage(1);
+      fetchCallDetailsData(1);
     }
   };
 
@@ -86,8 +87,8 @@ const ManageCallDetails = () => {
     isEngineerFilterActive,
     isCommissionFilterActive,
     jobStatusFilter,
-    appliedDateRange,
     followupfilter,
+    appliedDateRange,
   ]);
 
   const fetchCallDetailsData = async (page) => {
