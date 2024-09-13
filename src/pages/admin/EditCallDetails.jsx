@@ -696,7 +696,9 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Receive from Engineer</label>
+            <label className="form-label">
+              Receive from Engineer (Calculate)
+            </label>
             <input
               type="text"
               name="receivefromEngineer"
@@ -711,7 +713,7 @@ const EditCallDetails = () => {
             )}
           </div>
           <div>
-            <label className="form-label">Commission OW</label>
+            <label className="form-label">Commission OW (Calculate)</label>
             <input
               type="text"
               name="commissionow"
@@ -750,7 +752,7 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Service Charge</label>
+            <label className="form-label">Service Charge (Calculate)</label>
             <input
               type="text"
               name="serviceChange"
@@ -778,7 +780,7 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Incentive</label>
+            <label className="form-label">Incentive (Calculate)</label>
             <input
               type="text"
               name="incentive"
@@ -808,7 +810,7 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Expenses</label>
+            <label className="form-label">Expenses (Calculate)</label>
             <input
               type="text"
               name="expenses"
@@ -825,7 +827,7 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Commission IW</label>
+            <label className="form-label">Commission IW (Calculate)</label>
             <input
               type="text"
               name="commissioniw"
