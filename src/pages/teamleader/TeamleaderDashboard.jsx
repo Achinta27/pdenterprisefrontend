@@ -127,7 +127,7 @@ const TeamleaderDashboard = () => {
 
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get`,
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get?sortBy=visitdate`,
         { params, cancelToken: cancelToken.token }
       );
 
