@@ -441,9 +441,21 @@ const ManageCallDetails = () => {
     "oduser",
     "followupdate",
     "gddate",
-    "receivefromEngineer",
+
     "serviceType",
     "remarks",
+    "receivefromEngineer",
+    "amountReceived",
+    "commissionow",
+    "serviceChange",
+    "commissionDate",
+    "NPS",
+    "incentive",
+    "expenses",
+    "approval",
+    "totalAmount",
+    "commissioniw",
+    "partamount",
   ];
 
   const handleDuplicateFound = (duplicates) => {
