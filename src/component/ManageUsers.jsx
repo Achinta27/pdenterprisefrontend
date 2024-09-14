@@ -15,7 +15,7 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
   const [editedActiveState, setEditedActiveState] = useState("");
   const [editedPassword, setEditedPassword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 10;
+  const usersPerPage = 30;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // New state for modal
   const [selectedUser, setSelectedUser] = useState(null);
@@ -214,7 +214,7 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
             {currentUsers.map((user) => (
               <div
                 className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-base w-full"
-                key={user._id}
+                key={user._id || user.userId}
               >
                 <>
                   <div className="text-sm font-semibold w-[20%]">
@@ -287,14 +287,15 @@ const ManageUser = ({ users, fetchUsers, setUsers }) => {
                 className="w-full h-[3.5rem] p-2 bg-[white] text-black rounded-md border border-[#CCCCCC]"
                 placeholder="Mobile Number"
               />
-              <select
+              <input
+                type="text"
                 value={editedRole}
                 onChange={(e) => setEditedRole(e.target.value)}
                 className="w-full h-[3.5rem] p-2 bg-[white] text-black rounded-md border border-[#CCCCCC]"
-              >
-                <option value="Admin">Admin</option>
-                <option value="TeamLeader">Team Leader</option>
-              </select>
+                placeholder="Teamleader"
+                readOnly
+              />
+
               <input
                 type="text"
                 value={editedPassword}

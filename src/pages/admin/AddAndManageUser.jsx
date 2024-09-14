@@ -62,23 +62,16 @@ const AddAndManageUser = () => {
     setMessage("");
     setError("");
 
-    if (phone.length !== 10) {
-      setMobileNumberError("Mobile number must be exactly 10 digits");
-      setLoading(false);
-      return;
-    }
-
-    // Adjust the payload based on the role
     const payload =
       role === "Admin"
-        ? { name, phone, password, designation: role, activeState: "Active" } // Ensure activeState is set to Active
+        ? { name, phone, password, designation: role, activeState: "Active" }
         : {
             teamleadername: name,
             phone,
             password,
             designation: role,
             activeState: "Active",
-          }; // Ensure activeState is set to Active
+          };
 
     const url =
       role === "Admin"
@@ -87,39 +80,19 @@ const AddAndManageUser = () => {
 
     try {
       const response = await axios.post(url, payload);
-
       if (response.status === 201) {
-        const newUser =
-          role === "Admin"
-            ? {
-                ...response.data,
-                name,
-                phone,
-                designation: role,
-                activeState: "Active",
-              }
-            : {
-                ...response.data,
-                teamleadername: name,
-                phone,
-                designation: role,
-                activeState: "Active",
-              };
-
-        setMessage(response.data.message);
+        const newUser = response.data.user || response.data.teamleader;
+        setUsers((prevUsers) => [...prevUsers, newUser]);
+        setMessage("User Created Successfully");
         setName("");
         setPhone("");
         setPassword("");
         setRole("Admin");
-
-        // Update the users state with the newly added user
-        setUsers((prevUsers) => [...prevUsers, newUser]);
       } else {
         setMessage(response.data.error || "Failed to create user");
       }
     } catch (error) {
-      console.error("Error creating user:", error);
-      setError(error.response?.data?.error || "Server error");
+      setError(error.response?.data?.message || "Server error");
     } finally {
       setLoading(false);
     }
