@@ -43,7 +43,6 @@ const TeamleaderDashboard = () => {
   const [selectedEngineer, setSelectedEngineer] = useState("");
   const [selectedWarrantyTerm, setSelectedWarrantyTerm] = useState("");
   const [selectedServiceType, setSelectedServiceType] = useState("");
-  const [mobileNumberFilter, setMobileNumberFilter] = useState("");
   const [showDateFilterButtons, setShowDateFilterButtons] = useState(false);
   const [appliedDateRange, setAppliedDateRange] = useState(null);
   const [searchFilter, setSearchFilter] = useState("");
@@ -63,12 +62,13 @@ const TeamleaderDashboard = () => {
     },
   ]);
 
-  const [debouncedSearchFilter] = useDebounce(searchFilter, 300); // Debounce search filter
-  const [debouncedBrand] = useDebounce(selectedBrand, 300); // Debounce brand filter
-  const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300); // Debounce job status
-  const [debouncedEngineer] = useDebounce(selectedEngineer, 300); // Debounce engineer filter
-  const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300); // Debounce warranty term
+  const [debouncedSearchFilter] = useDebounce(searchFilter, 300);
+  const [debouncedBrand] = useDebounce(selectedBrand, 300);
+  const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300);
+  const [debouncedEngineer] = useDebounce(selectedEngineer, 300);
+  const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300);
   const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
+  const [debouncedDateRange] = useDebounce(appliedDateRange, 300);
 
   useEffect(() => {
     if (teamleaderId) {
@@ -83,7 +83,7 @@ const TeamleaderDashboard = () => {
     debouncedServiceType,
     debouncedSearchFilter,
     selectedServiceType,
-    appliedDateRange,
+    debouncedDateRange,
     teamleaderId,
     isEngineerFilterActive,
     isCommissionFilterActive,
@@ -101,11 +101,11 @@ const TeamleaderDashboard = () => {
     }
     cancelToken = axios.CancelToken.source();
 
-    const startDate = appliedDateRange
-      ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
+    const startDate = debouncedDateRange
+      ? format(debouncedDateRange[0].startDate, "yyyy-MM-dd")
       : undefined;
-    const endDate = appliedDateRange
-      ? format(appliedDateRange[0].endDate, "yyyy-MM-dd")
+    const endDate = debouncedDateRange
+      ? format(debouncedDateRange[0].endDate, "yyyy-MM-dd")
       : undefined;
 
     const params = {
@@ -294,18 +294,6 @@ const TeamleaderDashboard = () => {
     setSelectedServiceType(event.target.value);
     setCurrentPage(1);
     fetchCallDetailsData(1);
-  };
-
-  const handleMobileNumberChange = (event) => {
-    const value = event.target.value;
-    setMobileNumberFilter(value);
-
-    if (value === "") {
-      setCurrentPage(1);
-      fetchCallDetailsData(1);
-    } else {
-      setCurrentPage(1);
-    }
   };
 
   const headers = [

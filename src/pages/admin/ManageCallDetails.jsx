@@ -62,12 +62,13 @@ const ManageCallDetails = () => {
     },
   ]);
 
-  const [debouncedSearchFilter] = useDebounce(searchFilter, 300); // Debounce search filter
-  const [debouncedBrand] = useDebounce(selectedBrand, 300); // Debounce brand filter
-  const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300); // Debounce job status
-  const [debouncedEngineer] = useDebounce(selectedEngineer, 300); // Debounce engineer filter
-  const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300); // Debounce warranty term
+  const [debouncedSearchFilter] = useDebounce(searchFilter, 300);
+  const [debouncedBrand] = useDebounce(selectedBrand, 300);
+  const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300);
+  const [debouncedEngineer] = useDebounce(selectedEngineer, 300);
+  const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300);
   const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
+  const [debouncedDateRange] = useDebounce(appliedDateRange, 300);
 
   const handleSearchChange = (event) => {
     const value = event.target.value;
@@ -96,7 +97,7 @@ const ManageCallDetails = () => {
     isCommissionFilterActive,
     jobStatusFilter,
     followupfilter,
-    appliedDateRange,
+    debouncedDateRange,
   ]);
 
   let cancelToken;
@@ -109,12 +110,13 @@ const ManageCallDetails = () => {
     }
     cancelToken = axios.CancelToken.source();
 
-    const startDate = appliedDateRange
-      ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
+    const startDate = debouncedDateRange
+      ? format(debouncedDateRange[0].startDate, "yyyy-MM-dd")
       : undefined;
-    const endDate = appliedDateRange
-      ? format(appliedDateRange[0].endDate, "yyyy-MM-dd")
+    const endDate = debouncedDateRange
+      ? format(debouncedDateRange[0].endDate, "yyyy-MM-dd")
       : undefined;
+
     const params = {
       page,
       limit: callDetailsPerPage,
@@ -285,13 +287,12 @@ const ManageCallDetails = () => {
       prevStatus === "FollowUp" ? null : "FollowUp"
     );
 
-    // Filter jobs where followupdate is not null
     const followupfilter = followup.filter(
       (followup) => followup.followupdate !== null
     );
-    setFollowupfilter(followupfilter); // update state with filtered jobs
+    setFollowupfilter(followupfilter);
 
-    setCurrentPage(1); // reset to first page if using pagination
+    setCurrentPage(1);
   };
   const handleNotCloseClick = () => {
     setJobStatusFilter((prevStatus) =>
