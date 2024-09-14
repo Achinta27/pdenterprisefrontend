@@ -692,6 +692,7 @@ const EditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
+              maxDate={new Date()}
             />
           </div>
 

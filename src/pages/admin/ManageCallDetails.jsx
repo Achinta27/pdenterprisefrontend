@@ -13,6 +13,7 @@ import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
+import { useDebounce } from "use-debounce";
 
 const ManageCallDetails = () => {
   const [callDetails, setCallDetails] = useState([]);
@@ -61,6 +62,13 @@ const ManageCallDetails = () => {
     },
   ]);
 
+  const [debouncedSearchFilter] = useDebounce(searchFilter, 300); // Debounce search filter
+  const [debouncedBrand] = useDebounce(selectedBrand, 300); // Debounce brand filter
+  const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300); // Debounce job status
+  const [debouncedEngineer] = useDebounce(selectedEngineer, 300); // Debounce engineer filter
+  const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300); // Debounce warranty term
+  const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
+
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchFilter(value);
@@ -78,12 +86,12 @@ const ManageCallDetails = () => {
     fetchCallDetailsData(currentPage);
   }, [
     currentPage,
-    selectedBrand,
-    selectedJobStatus,
-    selectedEngineer,
-    selectedWarrantyTerm,
-    selectedServiceType,
-    searchFilter,
+    debouncedBrand,
+    debouncedJobStatus,
+    debouncedEngineer,
+    debouncedWarrantyTerm,
+    debouncedServiceType,
+    debouncedSearchFilter,
     isEngineerFilterActive,
     isCommissionFilterActive,
     jobStatusFilter,
@@ -91,8 +99,15 @@ const ManageCallDetails = () => {
     appliedDateRange,
   ]);
 
+  let cancelToken;
+
   const fetchCallDetailsData = async (page) => {
     setLoading(true);
+
+    if (cancelToken) {
+      cancelToken.cancel(); // Cancel previous request without logging
+    }
+    cancelToken = axios.CancelToken.source();
 
     const startDate = appliedDateRange
       ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
@@ -103,12 +118,12 @@ const ManageCallDetails = () => {
     const params = {
       page,
       limit: callDetailsPerPage,
-      brand: selectedBrand || undefined,
-      jobStatus: jobStatusFilter || selectedJobStatus || undefined,
-      engineer: selectedEngineer || undefined,
-      warrantyTerms: selectedWarrantyTerm || undefined,
-      serviceType: selectedServiceType || undefined,
-      number: searchFilter || undefined,
+      brand: debouncedBrand || undefined,
+      jobStatus: debouncedJobStatus || undefined,
+      engineer: debouncedEngineer || undefined,
+      warrantyTerms: debouncedWarrantyTerm || undefined,
+      serviceType: debouncedServiceType || undefined,
+      number: debouncedSearchFilter || undefined,
       noEngineer: isEngineerFilterActive ? true : undefined,
       commissionOw: isCommissionFilterActive ? true : undefined,
       notClose: jobStatusFilter === "Not Close" ? true : undefined,
@@ -121,13 +136,15 @@ const ManageCallDetails = () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/get?sortBy=gddate`,
-        { params }
+        { params, cancelToken: cancelToken.token }
       );
 
       setCallDetails(response.data.data);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error("Error fetching call details:", error);
+      if (!axios.isCancel(error)) {
+        console.error("Error fetching call details:", error); // Log only non-cancelation errors
+      }
     } finally {
       setLoading(false);
     }
@@ -177,14 +194,6 @@ const ManageCallDetails = () => {
 
   const handleDateChange = (ranges) => {
     let { startDate, endDate } = ranges.selection;
-
-    if (!endDate || endDate === startDate) {
-      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
-    }
-
-    if (endDate < startDate) {
-      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
-    }
 
     setDateRange([
       {

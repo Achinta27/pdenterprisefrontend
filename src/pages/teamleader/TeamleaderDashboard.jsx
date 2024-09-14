@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiEye, FiEdit } from "react-icons/fi";
-
+import { useDebounce } from "use-debounce";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -63,17 +63,25 @@ const TeamleaderDashboard = () => {
     },
   ]);
 
+  const [debouncedSearchFilter] = useDebounce(searchFilter, 300); // Debounce search filter
+  const [debouncedBrand] = useDebounce(selectedBrand, 300); // Debounce brand filter
+  const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300); // Debounce job status
+  const [debouncedEngineer] = useDebounce(selectedEngineer, 300); // Debounce engineer filter
+  const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300); // Debounce warranty term
+  const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
+
   useEffect(() => {
     if (teamleaderId) {
       fetchCallDetailsData(currentPage);
     }
   }, [
     currentPage,
-    selectedBrand,
-    selectedJobStatus,
-    selectedEngineer,
-    selectedWarrantyTerm,
-    searchFilter,
+    debouncedBrand,
+    debouncedJobStatus,
+    debouncedEngineer,
+    debouncedWarrantyTerm,
+    debouncedServiceType,
+    debouncedSearchFilter,
     selectedServiceType,
     appliedDateRange,
     teamleaderId,
@@ -83,8 +91,15 @@ const TeamleaderDashboard = () => {
     followupfilter,
   ]);
 
+  let cancelToken;
+
   const fetchCallDetailsData = async (page) => {
     setLoading(true);
+
+    if (cancelToken) {
+      cancelToken.cancel(); // Cancel previous request without logging
+    }
+    cancelToken = axios.CancelToken.source();
 
     const startDate = appliedDateRange
       ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
@@ -96,12 +111,12 @@ const TeamleaderDashboard = () => {
     const params = {
       page,
       limit: callDetailsPerPage,
-      brand: selectedBrand || undefined,
-      jobStatus: selectedJobStatus || undefined,
-      engineer: selectedEngineer || undefined,
-      warrantyTerms: selectedWarrantyTerm || undefined,
-      serviceType: selectedServiceType || undefined,
-      number: searchFilter || undefined,
+      brand: debouncedBrand || undefined,
+      jobStatus: debouncedJobStatus || undefined,
+      engineer: debouncedEngineer || undefined,
+      warrantyTerms: debouncedWarrantyTerm || undefined,
+      serviceType: debouncedServiceType || undefined,
+      number: debouncedSearchFilter || undefined,
       noEngineer: isEngineerFilterActive ? true : undefined,
       commissionOw: isCommissionFilterActive ? true : undefined,
       notClose: jobStatusFilter === "Not Close" ? true : undefined,
@@ -113,13 +128,15 @@ const TeamleaderDashboard = () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/get`,
-        { params }
+        { params, cancelToken: cancelToken.token }
       );
 
       setCallDetails(response.data.data);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error("Error fetching call details:", error);
+      if (!axios.isCancel(error)) {
+        console.error("Error fetching call details:", error); // Log only non-cancelation errors
+      }
     } finally {
       setLoading(false);
     }
@@ -141,14 +158,6 @@ const TeamleaderDashboard = () => {
 
   const handleDateChange = (ranges) => {
     let { startDate, endDate } = ranges.selection;
-
-    if (!endDate || endDate === startDate) {
-      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
-    }
-
-    if (endDate < startDate) {
-      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
-    }
 
     setDateRange([
       {

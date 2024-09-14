@@ -613,6 +613,7 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "gddate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
+              maxDate={new Date()}
             />
           </div>
 
