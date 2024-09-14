@@ -207,7 +207,24 @@ const TeamLeaderEditCallDetails = () => {
         setMessage("Failed to update call details");
       }
     } catch (error) {
-      console.error("Error updating call details:", error);
+      if (error.response && error.response.data && error.response.data.error) {
+        const errorField = Object.keys(error.response.data.error)[0];
+        const errorMessage = error.response.data.error;
+
+        if (errorMessage.includes("contactNumber must be unique")) {
+          setErrors((prev) => ({
+            ...prev,
+            contactNumber: "Mobile number already exists",
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            [errorField]: errorMessage,
+          }));
+        }
+      } else {
+        console.error("Error creating call details:", error);
+      }
     } finally {
       setLoading(false);
     }
