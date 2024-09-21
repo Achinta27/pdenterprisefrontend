@@ -242,6 +242,11 @@ const CallDetailsPartii = () => {
           <p>Loading...</p>
         ) : (
           <form
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+              }
+            }}
             onSubmit={handleSubmit}
             className="grid grid-cols-2 gap-6 w-full"
           >

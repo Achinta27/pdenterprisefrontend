@@ -103,7 +103,6 @@ const TeamLeaderCallEntry = () => {
     // Required fields validation
     const requiredFields = [
       "callDate",
-      "callNumber",
       "brandName",
       "customerName",
       "contactNumber",
@@ -301,7 +300,15 @@ const TeamLeaderCallEntry = () => {
     <TeamLeaderDashboardTemplate>
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-4">Add Call Details</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6 w-full">
+        <form
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+          onSubmit={handleSubmit}
+          className="grid grid-cols-2 gap-6 w-full"
+        >
           <div className="w-full">
             <label className="form-label">Call Date</label>
             <DatePicker

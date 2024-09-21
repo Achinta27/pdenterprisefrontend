@@ -180,7 +180,6 @@ const EditCallDetails = () => {
 
     const requiredFields = [
       "callDate",
-      "callNumber",
       "brandName",
       "customerName",
       "contactNumber",
@@ -383,7 +382,15 @@ const EditCallDetails = () => {
   return (
     <AdminDashboardTemplate>
       <div className="p-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6 w-full">
+        <form
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+          onSubmit={handleSubmit}
+          className="grid grid-cols-2 gap-6 w-full"
+        >
           <div className="w-full">
             <label className="form-label">Call Date</label>
             <DatePicker
