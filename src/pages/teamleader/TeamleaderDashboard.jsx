@@ -61,6 +61,7 @@ const TeamleaderDashboard = () => {
       key: "selection",
     },
   ]);
+  const [noEngineerCount, setNoEngineerCount] = useState(0);
 
   const [debouncedSearchFilter] = useDebounce(searchFilter, 300);
   const [debouncedBrand] = useDebounce(selectedBrand, 300);
@@ -133,6 +134,7 @@ const TeamleaderDashboard = () => {
 
       setCallDetails(response.data.data);
       setTotalPages(response.data.totalPages);
+      setNoEngineerCount(response.data.noEngineerCount);
     } catch (error) {
       if (!axios.isCancel(error)) {
         console.error("Error fetching call details:", error); // Log only non-cancelation errors
@@ -415,10 +417,12 @@ const TeamleaderDashboard = () => {
         <div className="flex flex-wrap gap-6">
           <button
             onClick={handleEngineerFilterClick}
-            className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
+            className={`text-black w-fit font-medium bg-[#EEEEEE] text-sm px-4 py-1 rounded-md shadow-custom ${
               isEngineerFilterActive
                 ? "bg-blue-500 text-white"
-                : "animate-blink"
+                : noEngineerCount > 0
+                ? "animate-blink"
+                : ""
             }`}
           >
             Engineer Not Assigned
