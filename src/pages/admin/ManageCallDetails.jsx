@@ -61,11 +61,15 @@ const ManageCallDetails = () => {
       key: "selection",
     },
   ]);
+  const [users, setUsers] = useState([]);
+  const [selectedTeamleader, setSelectedTeamleader] = useState("");
+  const [noEngineerCount, setNoEngineerCount] = useState(0);
 
   const [debouncedSearchFilter] = useDebounce(searchFilter, 300);
   const [debouncedBrand] = useDebounce(selectedBrand, 300);
   const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300);
   const [debouncedEngineer] = useDebounce(selectedEngineer, 300);
+  const [debouncedTeamleader] = useDebounce(selectedTeamleader, 300);
   const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300);
   const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
   const [debouncedDateRange] = useDebounce(appliedDateRange, 300);
@@ -98,6 +102,7 @@ const ManageCallDetails = () => {
     jobStatusFilter,
     followupfilter,
     debouncedDateRange,
+    debouncedTeamleader,
   ]);
 
   let cancelToken;
@@ -130,6 +135,7 @@ const ManageCallDetails = () => {
       commissionOw: isCommissionFilterActive ? true : undefined,
       notClose: jobStatusFilter === "Not Close" ? true : undefined,
       followup: followupfilter === "FollowUp" ? true : undefined,
+      teamleaderId: debouncedTeamleader || undefined,
 
       startDate,
       endDate,
@@ -143,12 +149,28 @@ const ManageCallDetails = () => {
 
       setCallDetails(response.data.data);
       setTotalPages(response.data.totalPages);
+      setNoEngineerCount(response.data.noEngineerCount);
     } catch (error) {
       if (!axios.isCancel(error)) {
         console.error("Error fetching call details:", error); // Log only non-cancelation errors
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const teamLeaderResponse = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/teamleader`
+      );
+      setUsers(teamLeaderResponse.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -166,6 +188,12 @@ const ManageCallDetails = () => {
 
   const handleEngineerChange = (event) => {
     setSelectedEngineer(event.target.value);
+    setCurrentPage(1);
+    fetchCallDetailsData(1);
+  };
+
+  const handleTeamleaderChange = (event) => {
+    setSelectedTeamleader(event.target.value); // Update the selected team leader ID
     setCurrentPage(1);
     fetchCallDetailsData(1);
   };
@@ -488,14 +516,17 @@ const ManageCallDetails = () => {
           </Link>
           <button
             onClick={handleEngineerFilterClick}
-            className={`text-black w-fit font-medium text-sm px-4 py-1 rounded-md shadow-custom ${
+            className={`text-black w-fit font-medium bg-[#EEEEEE] text-sm px-4 py-1 rounded-md shadow-custom ${
               isEngineerFilterActive
                 ? "bg-blue-500 text-white"
-                : "animate-blink"
+                : noEngineerCount > 0
+                ? "animate-blink"
+                : ""
             }`}
           >
             Engineer Not Assigned
           </button>
+
           <button
             onClick={handleFollowUpClick}
             className={`text-black w-fit font-medium text-wm px-4 py-1 rounded-md shadow-custom ${
@@ -638,6 +669,21 @@ const ManageCallDetails = () => {
               {filterOptions.engineers.map((engineer, index) => (
                 <option key={index} value={engineer}>
                   {engineer}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <select
+              name="teamleader"
+              value={selectedTeamleader}
+              onChange={handleTeamleaderChange}
+              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+            >
+              <option value="">By Teamleader</option>
+              {users.map((user, index) => (
+                <option key={index} value={user.teamleaderId}>
+                  {user.teamleadername}
                 </option>
               ))}
             </select>

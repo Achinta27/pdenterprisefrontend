@@ -43,7 +43,7 @@ const LoginPage = () => {
                   : ""
               }`}
             >
-              Employee
+              Team Leader
             </button>
           </div>
           <div className="mt-4">{renderLoginForm()}</div>
