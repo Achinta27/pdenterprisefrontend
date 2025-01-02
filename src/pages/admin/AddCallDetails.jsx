@@ -108,6 +108,7 @@ const AddCallDetails = () => {
       "warrantyTerms",
       "serviceType",
       "jobStatus",
+      "callNumber",
     ];
 
     requiredFields.forEach((field) => {
@@ -185,6 +186,11 @@ const AddCallDetails = () => {
           setErrors((prev) => ({
             ...prev,
             contactNumber: "Mobile number already exists",
+          }));
+        } else if (errorMessage.includes("callNumber must be unique.")) {
+          setErrors((prev) => ({
+            ...prev,
+            callNumber: "Call number already exists",
           }));
         } else {
           setErrors((prev) => ({
