@@ -8,18 +8,18 @@ import "react-datepicker/dist/react-datepicker.css";
 const CallDetailsPartii = () => {
   const { calldetailsId } = useParams();
   const [formData, setFormData] = useState({
-    receivefromEngineer: "",
+    receivefromEngineer: null,
     amountReceived: "",
-    commissionow: "",
-    serviceChange: "",
+    commissionow: null,
+    serviceChange: null,
     commissionDate: null,
-    NPS: "",
-    incentive: "",
-    expenses: "",
-    approval: "",
+    NPS: null,
+    incentive: null,
+    expenses: null,
+    approval: null,
     totalAmount: "",
-    commissioniw: "",
-    partamount: "",
+    commissioniw: null,
+    partamount: null,
   });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -44,7 +44,9 @@ const CallDetailsPartii = () => {
           amountReceived: callDetail.amountReceived || "",
           commissionow: callDetail.commissionow || "",
           serviceChange: callDetail.serviceChange || "",
-          commissionDate: parseDate(callDetail.commissionDate),
+          commissionDate: callDetail.commissionDate
+            ? parseDate(callDetail.commissionDate)
+            : null,
           NPS: callDetail.NPS || "",
           incentive: callDetail.incentive || "",
           expenses: callDetail.expenses || "",
@@ -71,7 +73,7 @@ const CallDetailsPartii = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value.trim() === "" ? null : value,
     }));
   };
 
@@ -140,6 +142,9 @@ const CallDetailsPartii = () => {
       );
 
       setFormData((prev) => ({ ...prev, [name]: utcDate }));
+    } else {
+      // Explicitly set the date field to null when cleared
+      setFormData((prev) => ({ ...prev, [name]: null }));
     }
   };
 
@@ -295,6 +300,7 @@ const CallDetailsPartii = () => {
                 onChange={(date) => handleDateChange(date, "commissionDate")}
                 className="form-input"
                 dateFormat="yyyy-MM-dd"
+                isClearable
               />
             </div>
 
