@@ -110,6 +110,7 @@ const TeamLeaderCallEntry = () => {
       "warrantyTerms",
       "serviceType",
       "jobStatus",
+      "callNumber",
     ];
 
     requiredFields.forEach((field) => {
