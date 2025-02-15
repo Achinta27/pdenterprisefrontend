@@ -61,6 +61,7 @@ const ManageCallDetails = () => {
       key: "selection",
     },
   ]);
+
   const [users, setUsers] = useState([]);
   const [selectedTeamleader, setSelectedTeamleader] = useState("");
   const [noEngineerCount, setNoEngineerCount] = useState(0);
@@ -73,6 +74,31 @@ const ManageCallDetails = () => {
   const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300);
   const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
   const [debouncedDateRange] = useDebounce(appliedDateRange, 300);
+
+  const [gdDateRange, setGdDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
+  const [appliedGdDateRange, setAppliedGdDateRange] = useState(null);
+  const [debouncedGdDateRange] = useDebounce(appliedGdDateRange, 300);
+  const [showGdDatePicker, setShowGdDatePicker] = useState(false);
+  const [showGdDateFilterButtons, setShowGdDateFilterButtons] = useState(false);
+
+  const [visitDateRange, setVisitDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
+  const [appliedVisitDateRange, setAppliedVisitDateRange] = useState(null);
+  const [debouncedVisitDateRange] = useDebounce(appliedVisitDateRange, 300);
+  const [showVisitDatePicker, setShowVisitDatePicker] = useState(false);
+  const [showVisitDateFilterButtons, setShowVisitDateFilterButtons] =
+    useState(false);
 
   const handleSearchChange = (event) => {
     const value = event.target.value;
@@ -103,6 +129,8 @@ const ManageCallDetails = () => {
     followupfilter,
     debouncedDateRange,
     debouncedTeamleader,
+    debouncedGdDateRange,
+    debouncedVisitDateRange,
   ]);
 
   let cancelToken;
@@ -111,7 +139,7 @@ const ManageCallDetails = () => {
     setLoading(true);
 
     if (cancelToken) {
-      cancelToken.cancel(); // Cancel previous request without logging
+      cancelToken.cancel();
     }
     cancelToken = axios.CancelToken.source();
 
@@ -120,6 +148,20 @@ const ManageCallDetails = () => {
       : undefined;
     const endDate = debouncedDateRange
       ? format(debouncedDateRange[0].endDate, "yyyy-MM-dd")
+      : undefined;
+
+    const startGdDate = debouncedGdDateRange
+      ? format(debouncedGdDateRange[0].startDate, "yyyy-MM-dd")
+      : undefined;
+    const endGdDate = debouncedGdDateRange
+      ? format(debouncedGdDateRange[0].endDate, "yyyy-MM-dd")
+      : undefined;
+
+    const startVisitDate = debouncedVisitDateRange
+      ? format(debouncedVisitDateRange[0].startDate, "yyyy-MM-dd")
+      : undefined;
+    const endVisitDate = debouncedVisitDateRange
+      ? format(debouncedVisitDateRange[0].endDate, "yyyy-MM-dd")
       : undefined;
 
     const params = {
@@ -139,6 +181,10 @@ const ManageCallDetails = () => {
 
       startDate,
       endDate,
+      startGdDate,
+      endGdDate,
+      startVisitDate,
+      endVisitDate,
     };
 
     try {
@@ -241,6 +287,7 @@ const ManageCallDetails = () => {
     setShowDatePicker(false);
     setShowDateFilterButtons(false);
     fetchCallDetailsData(1);
+    setCurrentPage(1);
   };
 
   const handleCancelDateFilter = () => {
@@ -268,6 +315,7 @@ const ManageCallDetails = () => {
     setAppliedDateRange(null);
     setShowDateFilterButtons(false);
     fetchCallDetailsData(1);
+    setCurrentPage(1);
     setShowDatePicker(false);
   };
 
@@ -278,6 +326,136 @@ const ManageCallDetails = () => {
       appliedDateRange[0].endDate !== undefined
     );
   };
+
+  // for GD date filter
+
+  const handleGdDateChange = (ranges) => {
+    let { startDate, endDate } = ranges.selection;
+
+    setGdDateRange([
+      {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        key: "selection",
+      },
+    ]);
+
+    setShowGdDateFilterButtons(true);
+  };
+
+  const handleApplyGdDateFilter = () => {
+    setAppliedGdDateRange(gdDateRange);
+    setShowGdDatePicker(false);
+    setShowGdDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const handleCancelGdDateFilter = () => {
+    setGdDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedGdDateRange(null);
+    setShowGdDateFilterButtons(false);
+
+    setShowGdDatePicker(false);
+    fetchCallDetailsData(1);
+  };
+
+  const clearGdDateFilter = () => {
+    setGdDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedGdDateRange(null);
+    setShowGdDateFilterButtons(false);
+
+    setShowGdDatePicker(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const isGDDateFilterApplied = () => {
+    return (
+      appliedGdDateRange !== null &&
+      appliedGdDateRange[0].startDate !== undefined &&
+      appliedGdDateRange[0].endDate !== undefined
+    );
+  };
+
+  // end Gd date filter
+
+  // for Visit Date Filter
+
+  const handleVisitDateChange = (ranges) => {
+    let { startDate, endDate } = ranges.selection;
+
+    setVisitDateRange([
+      {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        key: "selection",
+      },
+    ]);
+
+    setShowVisitDateFilterButtons(true);
+  };
+
+  const handleApplyVisitDateFilter = () => {
+    setAppliedVisitDateRange(visitDateRange);
+    setShowVisitDatePicker(false);
+    setShowVisitDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const handleCancelVisitDateFilter = () => {
+    setVisitDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedVisitDateRange(null);
+    setShowVisitDateFilterButtons(false);
+
+    setShowVisitDatePicker(false);
+    fetchCallDetailsData(1);
+  };
+
+  const clearVisitDateFilter = () => {
+    setVisitDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedVisitDateRange(null);
+    setShowVisitDateFilterButtons(false);
+
+    setShowVisitDatePicker(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const isVisitDateFilterApplied = () => {
+    return (
+      appliedVisitDateRange !== null &&
+      appliedVisitDateRange[0].startDate !== undefined &&
+      appliedVisitDateRange[0].endDate !== undefined
+    );
+  };
+
+  // end visit date filter
 
   useEffect(() => {
     if (mobileNumberFilter === "") {
@@ -577,60 +755,183 @@ const ManageCallDetails = () => {
               endDate: appliedDateRange
                 ? format(appliedDateRange[0].endDate, "yyyy-MM-dd")
                 : undefined,
+
+              startGdDate: appliedGdDateRange
+                ? format(appliedGdDateRange[0].startDate, "yyyy-MM-dd")
+                : undefined,
+              endGdDate: appliedGdDateRange
+                ? format(appliedGdDateRange[0].endDate, "yyyy-MM-dd")
+                : undefined,
+              startVisitDate: appliedVisitDateRange
+                ? format(appliedVisitDateRange[0].startDate, "yyyy-MM-dd")
+                : undefined,
+              endVisitDate: appliedVisitDateRange
+                ? format(appliedVisitDateRange[0].endDate, "yyyy-MM-dd")
+                : undefined,
             }}
             fileName="Filtered_Call_Details.xlsx"
           />
         </div>
 
         <div className="flex flex-wrap gap-4 items-center  ">
-          <div className="relative">
-            <input
-              type="text"
-              readOnly
-              value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
-              className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
-              onClick={() => setShowDatePicker(!showDatePicker)}
-            />
+          <div className="flex items-center gap-2 ">
+            <h1 className="text-sm font-medium">Call Date:</h1>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                onClick={() => setShowDatePicker(!showDatePicker)}
+              />
 
-            {showDatePicker && (
-              <div className="absolute z-10 top-16 bg-white shadow-lg">
-                <DateRangePicker
-                  ranges={dateRange}
-                  onChange={handleDateChange}
-                  rangeColors={["#3b82f6"]}
-                />
+              {showDatePicker && (
+                <div className="absolute z-10 top-16 bg-white shadow-lg">
+                  <DateRangePicker
+                    ranges={dateRange}
+                    onChange={handleDateChange}
+                    rangeColors={["#3b82f6"]}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              {isDateFilterApplied() ? (
+                <button
+                  onClick={clearDateFilter}
+                  className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
+                >
+                  Clear
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+
+            {showDateFilterButtons && (
+              <div className="flex gap-2 text-sm">
+                <button
+                  onClick={handleApplyDateFilter}
+                  className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
+                >
+                  Show
+                </button>
+                <button
+                  onClick={handleCancelDateFilter}
+                  className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
+                >
+                  Cancel
+                </button>
               </div>
             )}
           </div>
-          <div>
-            {isDateFilterApplied() ? (
-              <button
-                onClick={clearDateFilter}
-                className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
-              >
-                Clear
-              </button>
-            ) : (
-              ""
+
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-medium">GD Date:</h1>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={`From: ${gdDateRange[0].startDate.toLocaleDateString()} To: ${gdDateRange[0].endDate.toLocaleDateString()}`}
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                onClick={() => setShowGdDatePicker(!showGdDatePicker)}
+              />
+
+              {showGdDatePicker && (
+                <div className="absolute z-10 top-16 bg-white shadow-lg">
+                  <DateRangePicker
+                    ranges={gdDateRange}
+                    onChange={handleGdDateChange}
+                    rangeColors={["#3b82f6"]}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              {isGDDateFilterApplied() ? (
+                <button
+                  onClick={clearGdDateFilter}
+                  className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
+                >
+                  Clear
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+
+            {showGdDateFilterButtons && (
+              <div className="flex gap-2 text-sm">
+                <button
+                  onClick={handleApplyGdDateFilter}
+                  className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
+                >
+                  Show
+                </button>
+                <button
+                  onClick={handleCancelGdDateFilter}
+                  className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
             )}
           </div>
 
-          {showDateFilterButtons && (
-            <div className="flex gap-2 text-sm">
-              <button
-                onClick={handleApplyDateFilter}
-                className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
-              >
-                Show
-              </button>
-              <button
-                onClick={handleCancelDateFilter}
-                className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
-              >
-                Cancel
-              </button>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-medium">Visit Date:</h1>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={`From: ${visitDateRange[0].startDate.toLocaleDateString()} To: ${visitDateRange[0].endDate.toLocaleDateString()}`}
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                onClick={() => setShowVisitDatePicker(!showVisitDatePicker)}
+              />
+
+              {showVisitDatePicker && (
+                <div className="absolute z-10 top-16 bg-white shadow-lg">
+                  <DateRangePicker
+                    ranges={visitDateRange}
+                    onChange={handleVisitDateChange}
+                    rangeColors={["#3b82f6"]}
+                  />
+                </div>
+              )}
             </div>
-          )}
+
+            <div>
+              {isVisitDateFilterApplied() ? (
+                <button
+                  onClick={clearVisitDateFilter}
+                  className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
+                >
+                  Clear
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+
+            {showVisitDateFilterButtons && (
+              <div className="flex gap-2 text-sm">
+                <button
+                  onClick={handleApplyVisitDateFilter}
+                  className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
+                >
+                  Show
+                </button>
+                <button
+                  onClick={handleCancelVisitDateFilter}
+                  className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
 
           <div>
             <input

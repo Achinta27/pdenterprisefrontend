@@ -182,16 +182,7 @@ const CallDetailsPartii = () => {
 
   const validateForm = () => {
     const errors = {};
-    const requiredFields = [
-      "receivefromEngineer",
-      "commissionow",
-      "serviceChange",
-      "NPS",
-      "incentive",
-      "approval",
-      "expenses",
-      "commissioniw",
-    ];
+    const requiredFields = ["receivefromEngineer"];
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {

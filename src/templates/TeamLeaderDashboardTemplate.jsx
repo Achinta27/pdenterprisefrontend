@@ -52,7 +52,7 @@ const TeamLeaderDashboardTemplate = ({ children }) => {
           isMobileSidebarOpen={isMobileSidebarOpen}
           closeMobileSidebar={closeMobileSidebar}
         />
-        <div className="w-full p-4 overflow-auto no-scrollbar lg:ml-[10rem]">
+        <div className="w-full p-4 overflow-auto no-scrollbar lg:ml-[6rem]">
           {children}
         </div>
       </div>

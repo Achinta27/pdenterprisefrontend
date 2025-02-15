@@ -71,6 +71,31 @@ const TeamleaderDashboard = () => {
   const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
   const [debouncedDateRange] = useDebounce(appliedDateRange, 300);
 
+  const [gdDateRange, setGdDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
+  const [appliedGdDateRange, setAppliedGdDateRange] = useState(null);
+  const [debouncedGdDateRange] = useDebounce(appliedGdDateRange, 300);
+  const [showGdDatePicker, setShowGdDatePicker] = useState(false);
+  const [showGdDateFilterButtons, setShowGdDateFilterButtons] = useState(false);
+
+  const [visitDateRange, setVisitDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
+  const [appliedVisitDateRange, setAppliedVisitDateRange] = useState(null);
+  const [debouncedVisitDateRange] = useDebounce(appliedVisitDateRange, 300);
+  const [showVisitDatePicker, setShowVisitDatePicker] = useState(false);
+  const [showVisitDateFilterButtons, setShowVisitDateFilterButtons] =
+    useState(false);
+
   useEffect(() => {
     if (teamleaderId) {
       fetchCallDetailsData(currentPage);
@@ -90,6 +115,8 @@ const TeamleaderDashboard = () => {
     isCommissionFilterActive,
     jobStatusFilter,
     followupfilter,
+    debouncedGdDateRange,
+    debouncedVisitDateRange,
   ]);
 
   let cancelToken;
@@ -109,6 +136,20 @@ const TeamleaderDashboard = () => {
       ? format(debouncedDateRange[0].endDate, "yyyy-MM-dd")
       : undefined;
 
+    const startGdDate = debouncedGdDateRange
+      ? format(debouncedGdDateRange[0].startDate, "yyyy-MM-dd")
+      : undefined;
+    const endGdDate = debouncedGdDateRange
+      ? format(debouncedGdDateRange[0].endDate, "yyyy-MM-dd")
+      : undefined;
+
+    const startVisitDate = debouncedVisitDateRange
+      ? format(debouncedVisitDateRange[0].startDate, "yyyy-MM-dd")
+      : undefined;
+    const endVisitDate = debouncedVisitDateRange
+      ? format(debouncedVisitDateRange[0].endDate, "yyyy-MM-dd")
+      : undefined;
+
     const params = {
       page,
       limit: callDetailsPerPage,
@@ -124,6 +165,10 @@ const TeamleaderDashboard = () => {
       followup: followupfilter === "FollowUp" ? true : undefined,
       startDate,
       endDate,
+      startGdDate,
+      endGdDate,
+      startVisitDate,
+      endVisitDate,
     };
 
     try {
@@ -176,13 +221,11 @@ const TeamleaderDashboard = () => {
     setSearchFilter(value);
 
     if (value === "") {
-      // When the search filter is cleared, fetch all data
       setCurrentPage(1);
-      fetchCallDetailsData(1, true); // Pass an additional flag to reset filters
+      fetchCallDetailsData(1, true);
     } else {
-      // When search filter is applied
       setCurrentPage(1);
-      fetchCallDetailsData(1); // Fetch data based on the search filter
+      fetchCallDetailsData(1);
     }
   };
 
@@ -228,6 +271,136 @@ const TeamleaderDashboard = () => {
       appliedDateRange[0].endDate !== undefined
     );
   };
+
+  // for GD date filter
+
+  const handleGdDateChange = (ranges) => {
+    let { startDate, endDate } = ranges.selection;
+
+    setGdDateRange([
+      {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        key: "selection",
+      },
+    ]);
+
+    setShowGdDateFilterButtons(true);
+  };
+
+  const handleApplyGdDateFilter = () => {
+    setAppliedGdDateRange(gdDateRange);
+    setShowGdDatePicker(false);
+    setShowGdDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const handleCancelGdDateFilter = () => {
+    setGdDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedGdDateRange(null);
+    setShowGdDateFilterButtons(false);
+
+    setShowGdDatePicker(false);
+    fetchCallDetailsData(1);
+  };
+
+  const clearGdDateFilter = () => {
+    setGdDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedGdDateRange(null);
+    setShowGdDateFilterButtons(false);
+
+    setShowGdDatePicker(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const isGDDateFilterApplied = () => {
+    return (
+      appliedGdDateRange !== null &&
+      appliedGdDateRange[0].startDate !== undefined &&
+      appliedGdDateRange[0].endDate !== undefined
+    );
+  };
+
+  // end Gd date filter
+
+  // for Visit Date Filter
+
+  const handleVisitDateChange = (ranges) => {
+    let { startDate, endDate } = ranges.selection;
+
+    setVisitDateRange([
+      {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        key: "selection",
+      },
+    ]);
+
+    setShowVisitDateFilterButtons(true);
+  };
+
+  const handleApplyVisitDateFilter = () => {
+    setAppliedVisitDateRange(visitDateRange);
+    setShowVisitDatePicker(false);
+    setShowVisitDateFilterButtons(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const handleCancelVisitDateFilter = () => {
+    setVisitDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedVisitDateRange(null);
+    setShowVisitDateFilterButtons(false);
+
+    setShowVisitDatePicker(false);
+    fetchCallDetailsData(1);
+  };
+
+  const clearVisitDateFilter = () => {
+    setVisitDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
+    ]);
+    setAppliedVisitDateRange(null);
+    setShowVisitDateFilterButtons(false);
+
+    setShowVisitDatePicker(false);
+    fetchCallDetailsData(1);
+    setCurrentPage(1);
+  };
+
+  const isVisitDateFilterApplied = () => {
+    return (
+      appliedVisitDateRange !== null &&
+      appliedVisitDateRange[0].startDate !== undefined &&
+      appliedVisitDateRange[0].endDate !== undefined
+    );
+  };
+
+  // end visit date filter
 
   const handleViewClick = (callDetail) => {
     setSelectedCallDetail(callDetail);
@@ -299,12 +472,16 @@ const TeamleaderDashboard = () => {
   };
 
   const headers = [
-    "C. Name",
-    "Mobile Number",
     "Visit Date",
-    "GD Date",
-    "Route",
+    "Call No",
     "Brand",
+    "C. Name",
+    "Mobile No",
+    "Route",
+    "Product",
+    "Warranty ",
+    "Status",
+    "Call Type",
     "Action",
   ];
 
@@ -461,54 +638,163 @@ const TeamleaderDashboard = () => {
           </button>
         </div>
         <div className="flex flex-wrap gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              readOnly
-              value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
-              className="md:px-2 w-fit shadow-custom !outline-none md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
-              onClick={() => setShowDatePicker(!showDatePicker)}
-            />
+          <div className="flex items-center gap-2 ">
+            <h1 className="text-sm font-medium">Call Date:</h1>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
+                className="md:px-2 w-fit shadow-custom !outline-none md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                onClick={() => setShowDatePicker(!showDatePicker)}
+              />
 
-            {showDatePicker && (
-              <div className="absolute z-10 top-16 bg-white shadow-lg">
-                <DateRangePicker
-                  ranges={dateRange}
-                  onChange={handleDateChange}
-                  rangeColors={["#3b82f6"]}
-                />
+              {showDatePicker && (
+                <div className="absolute z-10 top-16 bg-white shadow-lg">
+                  <DateRangePicker
+                    ranges={dateRange}
+                    onChange={handleDateChange}
+                    rangeColors={["#3b82f6"]}
+                  />
+                </div>
+              )}
+            </div>
+            <div>
+              {isDateFilterApplied() ? (
+                <button
+                  onClick={clearDateFilter}
+                  className="px-4 py-1 bg-red-500 text-sm shadow-custom text-white rounded-lg"
+                >
+                  Clear
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+
+            {showDateFilterButtons && (
+              <div className="flex gap-2 text-sm">
+                <button
+                  onClick={handleApplyDateFilter}
+                  className="px-4 py-1 bg-blue-500 shadow-custom text-white rounded-lg"
+                >
+                  Show
+                </button>
+                <button
+                  onClick={handleCancelDateFilter}
+                  className="px-4 py-1 bg-gray-300 shadow-custom text-black rounded-lg"
+                >
+                  Cancel
+                </button>
               </div>
             )}
           </div>
-          <div>
-            {isDateFilterApplied() ? (
-              <button
-                onClick={clearDateFilter}
-                className="px-4 py-1 bg-red-500 text-sm shadow-custom text-white rounded-lg"
-              >
-                Clear
-              </button>
-            ) : (
-              ""
+
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-medium">GD Date:</h1>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={`From: ${gdDateRange[0].startDate.toLocaleDateString()} To: ${gdDateRange[0].endDate.toLocaleDateString()}`}
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                onClick={() => setShowGdDatePicker(!showGdDatePicker)}
+              />
+
+              {showGdDatePicker && (
+                <div className="absolute z-10 top-16 bg-white shadow-lg">
+                  <DateRangePicker
+                    ranges={gdDateRange}
+                    onChange={handleGdDateChange}
+                    rangeColors={["#3b82f6"]}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              {isGDDateFilterApplied() ? (
+                <button
+                  onClick={clearGdDateFilter}
+                  className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
+                >
+                  Clear
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+
+            {showGdDateFilterButtons && (
+              <div className="flex gap-2 text-sm">
+                <button
+                  onClick={handleApplyGdDateFilter}
+                  className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
+                >
+                  Show
+                </button>
+                <button
+                  onClick={handleCancelGdDateFilter}
+                  className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
             )}
           </div>
 
-          {showDateFilterButtons && (
-            <div className="flex gap-2 text-sm">
-              <button
-                onClick={handleApplyDateFilter}
-                className="px-4 py-1 bg-blue-500 shadow-custom text-white rounded-lg"
-              >
-                Show
-              </button>
-              <button
-                onClick={handleCancelDateFilter}
-                className="px-4 py-1 bg-gray-300 shadow-custom text-black rounded-lg"
-              >
-                Cancel
-              </button>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-medium">Visit Date:</h1>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={`From: ${visitDateRange[0].startDate.toLocaleDateString()} To: ${visitDateRange[0].endDate.toLocaleDateString()}`}
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                onClick={() => setShowVisitDatePicker(!showVisitDatePicker)}
+              />
+
+              {showVisitDatePicker && (
+                <div className="absolute z-10 top-16 bg-white shadow-lg">
+                  <DateRangePicker
+                    ranges={visitDateRange}
+                    onChange={handleVisitDateChange}
+                    rangeColors={["#3b82f6"]}
+                  />
+                </div>
+              )}
             </div>
-          )}
+
+            <div>
+              {isVisitDateFilterApplied() ? (
+                <button
+                  onClick={clearVisitDateFilter}
+                  className="px-4 py-1 text-sm shadow-custom bg-red-500 text-white rounded-lg"
+                >
+                  Clear
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+
+            {showVisitDateFilterButtons && (
+              <div className="flex gap-2 text-sm">
+                <button
+                  onClick={handleApplyVisitDateFilter}
+                  className="px-4 py-1 shadow-custom bg-blue-500 text-white rounded-lg"
+                >
+                  Show
+                </button>
+                <button
+                  onClick={handleCancelVisitDateFilter}
+                  className="px-4 py-1 shadow-custom bg-gray-300 text-black rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
           <div>
             <input
               type="text"
@@ -621,29 +907,33 @@ const TeamleaderDashboard = () => {
               <div className="flex flex-col h-[60vh] no-scrollbar bg-white overflow-auto">
                 {callDetails.map((detail) => (
                   <div
-                    className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-base w-full"
+                    className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-[13px] xl:text-sm xxl:text-base w-full"
                     key={detail.calldetailsId}
                   >
-                    <div className="text-sm font-semibold flex-1">
-                      {detail.customerName}
-                    </div>
-                    <div className="text-sm font-semibold flex-1">
-                      {detail.contactNumber}
-                    </div>
-                    <div className="text-sm font-semibold flex-1">
+                    <div className="flex-1 break-words">
                       {formatDate(detail.visitdate)}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
-                      {formatDate(detail.gddate)}
+                    <div className="flex-1 break-words">
+                      {detail.callNumber}
                     </div>
-                    <div className="text-sm font-semibold flex-1">
-                      {detail.route}
+                    <div className="flex-1 break-words">{detail.brandName}</div>
+                    <div className="flex-1 break-all">
+                      {detail.customerName}
                     </div>
-
-                    <div className="text-sm font-semibold flex-1">
-                      {detail.brandName}
+                    <div className="flex-1 break-words">
+                      {detail.contactNumber}
                     </div>
-
+                    <div className="flex-1 break-all">{detail.route}</div>
+                    <div className="flex-1 break-all">
+                      {detail.productsName}
+                    </div>
+                    <div className="flex-1 break-words">
+                      {detail.warrantyTerms}
+                    </div>
+                    <div className="flex-1 break-all">{detail.jobStatus}</div>
+                    <div className="font-semibold flex-1 break-all">
+                      {detail.serviceType}
+                    </div>
                     <div className="flex flex-row flex-1 items-center font-semibold gap-5">
                       <button
                         className="text-[#5BC0DE]"
@@ -659,7 +949,7 @@ const TeamleaderDashboard = () => {
                       </button>
                       <div
                         onClick={() => handleCopy(detail)}
-                        className=" cursor-pointer text-[#c33434]"
+                        className="cursor-pointer text-[#c33434]"
                       >
                         <MdFileCopy />
                       </div>

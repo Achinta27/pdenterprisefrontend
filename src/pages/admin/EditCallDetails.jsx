@@ -32,18 +32,18 @@ const EditCallDetails = () => {
     oduser: "",
     followupdate: null,
     gddate: null,
-    receivefromEngineer: "",
+    receivefromEngineer: null,
     amountReceived: "",
-    commissionow: "",
-    serviceChange: "",
+    commissionow: null,
+    serviceChange: null,
     commissionDate: null,
-    NPS: "",
-    incentive: "",
-    expenses: "",
-    approval: "",
+    NPS: null,
+    incentive: null,
+    expenses: null,
+    approval: null,
     totalAmount: "",
-    commissioniw: "",
-    partamount: "",
+    commissioniw: null,
+    partamount: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -211,7 +211,7 @@ const EditCallDetails = () => {
     }
 
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/update/${calldetailsId}`,
@@ -281,7 +281,9 @@ const EditCallDetails = () => {
 
     setFormData((prev) => ({
       ...prev,
-      amountReceived: calculatedAmountRecived.toFixed(2),
+      amountReceived: isNaN(calculatedAmountRecived)
+        ? "0.00"
+        : calculatedAmountRecived.toFixed(2),
     }));
   }, [formData.receivefromEngineer, formData.commissionow]);
 
@@ -293,7 +295,10 @@ const EditCallDetails = () => {
         setErrors((prev) => ({ ...prev, [name]: "" })); // Reset errors when input is valid
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value.trim() === "" ? null : value,
+      }));
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
