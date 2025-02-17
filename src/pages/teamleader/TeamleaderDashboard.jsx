@@ -234,6 +234,7 @@ const TeamleaderDashboard = () => {
     setShowDatePicker(false);
     setShowDateFilterButtons(false);
     fetchCallDetailsData(1);
+    setCurrentPage(1);
   };
 
   const handleCancelDateFilter = () => {
