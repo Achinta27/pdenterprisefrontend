@@ -187,7 +187,7 @@ const CallDetailsPartii = () => {
 
   const validateForm = () => {
     const errors = {};
-    const requiredFields = ["receivefromEngineer"];
+    const requiredFields = [];
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {

@@ -33,7 +33,7 @@ const TeamLeaderEditCallDetails = () => {
     followupdate: null,
     gddate: null,
     receivefromEngineer: "",
-    amountReceived: "",
+    amountReceived: null,
     commissionow: "",
     serviceChange: "",
     commissionDate: null,
@@ -192,7 +192,7 @@ const TeamLeaderEditCallDetails = () => {
     }
 
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/update/${calldetailsId}`,
@@ -262,7 +262,10 @@ const TeamLeaderEditCallDetails = () => {
         setErrors((prev) => ({ ...prev, [name]: "" })); // Reset errors when input is valid
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value.trim() === "" ? null : value,
+      }));
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
