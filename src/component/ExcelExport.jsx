@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 
-const ExcelExport = ({ filters, fileName = "call_details" }) => {
+const ExcelExport = ({ filters, fileName = "call_details", columns }) => {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const batchSize = 40000;
@@ -44,45 +44,6 @@ const ExcelExport = ({ filters, fileName = "call_details" }) => {
             },
           }
         );
-
-        const columns = [
-          "callDate",
-          "visitdate",
-          "callNumber",
-          "brandName",
-          "customerName",
-          "address",
-          "route",
-          "contactNumber",
-          "whatsappNumber",
-          "engineer",
-          "productsName",
-          "warrantyTerms",
-          "TAT",
-          "serviceType",
-          "remarks",
-          "parts",
-          "jobStatus",
-          "modelNumber",
-          "iduser",
-          "closerCode",
-          "dateofPurchase",
-          "oduser",
-          "followupdate",
-          "gddate",
-          "receivefromEngineer",
-          "amountReceived",
-          "commissionow",
-          "serviceChange",
-          "commissionDate",
-          "NPS",
-          "incentive",
-          "expenses",
-          "approval",
-          "totalAmount",
-          "commissioniw",
-          "partamount",
-        ];
 
         const dataToExport = response.data.data.map((detail) =>
           columns.reduce((obj, col) => {

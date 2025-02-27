@@ -16,6 +16,7 @@ import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { MdFileCopy } from "react-icons/md";
+import ExcelExport from "../../component/ExcelExport";
 
 const TeamleaderDashboard = () => {
   const [callDetails, setCallDetails] = useState([]);
@@ -482,6 +483,7 @@ const TeamleaderDashboard = () => {
     "Product",
     "Warranty ",
     "Status",
+    "Engineer",
     "Call Type",
     "Action",
   ];
@@ -589,6 +591,34 @@ const TeamleaderDashboard = () => {
       });
   };
 
+  const columns = [
+    "callDate",
+    "visitdate",
+    "callNumber",
+    "brandName",
+    "customerName",
+    "address",
+    "route",
+    "contactNumber",
+    "whatsappNumber",
+    "engineer",
+    "productsName",
+    "warrantyTerms",
+    "TAT",
+    "serviceType",
+    "remarks",
+    "parts",
+    "jobStatus",
+    "modelNumber",
+    "iduser",
+    "closerCode",
+    "dateofPurchase",
+    "oduser",
+    "followupdate",
+    "gddate",
+    "receivefromEngineer",
+  ];
+
   return (
     <TeamLeaderDashboardTemplate>
       <div className="flex flex-col gap-8">
@@ -637,6 +667,41 @@ const TeamleaderDashboard = () => {
           >
             Commission OW
           </button>
+          <ExcelExport
+            filters={{
+              brand: selectedBrand,
+              jobStatus: jobStatusFilter || selectedJobStatus,
+              engineer: selectedEngineer,
+              warrantyTerms: selectedWarrantyTerm,
+              serviceType: selectedServiceType,
+
+              noEngineer: isEngineerFilterActive ? true : undefined,
+              commissionOw: isCommissionFilterActive ? true : undefined,
+              followup: jobStatusFilter === "FollowUp" ? true : undefined,
+              notClose: jobStatusFilter === "Not Close" ? true : undefined,
+              startDate: appliedDateRange
+                ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
+                : undefined,
+              endDate: appliedDateRange
+                ? format(appliedDateRange[0].endDate, "yyyy-MM-dd")
+                : undefined,
+
+              startGdDate: appliedGdDateRange
+                ? format(appliedGdDateRange[0].startDate, "yyyy-MM-dd")
+                : undefined,
+              endGdDate: appliedGdDateRange
+                ? format(appliedGdDateRange[0].endDate, "yyyy-MM-dd")
+                : undefined,
+              startVisitDate: appliedVisitDateRange
+                ? format(appliedVisitDateRange[0].startDate, "yyyy-MM-dd")
+                : undefined,
+              endVisitDate: appliedVisitDateRange
+                ? format(appliedVisitDateRange[0].endDate, "yyyy-MM-dd")
+                : undefined,
+            }}
+            columns={columns}
+            fileName="Filtered_Call_Details.xlsx"
+          />
         </div>
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2 ">
@@ -898,7 +963,7 @@ const TeamleaderDashboard = () => {
             <LoadingAnimation />
           ) : (
             <div className="flex flex-col gap-2">
-              <div className="flex flex-row p-4 gap-4 font-medium text-base bg-black text-white w-full border-b">
+              <div className="flex flex-row p-4 gap-4 font-medium xxl:text-base text-sm bg-black text-white w-full border-b">
                 {headers.map((header, index) => (
                   <div className="flex-1" key={index}>
                     {header}
@@ -908,7 +973,7 @@ const TeamleaderDashboard = () => {
               <div className="flex flex-col h-[60vh] no-scrollbar bg-white overflow-auto">
                 {callDetails.map((detail) => (
                   <div
-                    className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-[13px] xl:text-sm xxl:text-base w-full"
+                    className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-[13px] xl:text-xs xxl:text-base w-full"
                     key={detail.calldetailsId}
                   >
                     <div className="flex-1 break-words">
@@ -932,6 +997,9 @@ const TeamleaderDashboard = () => {
                       {detail.warrantyTerms}
                     </div>
                     <div className="flex-1 break-all">{detail.jobStatus}</div>
+                    <div className="flex-1 break-all">
+                      {detail.engineer || "Not Assign"}
+                    </div>
                     <div className="font-semibold flex-1 break-all">
                       {detail.serviceType}
                     </div>

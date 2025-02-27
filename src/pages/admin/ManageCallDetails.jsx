@@ -677,6 +677,44 @@ const ManageCallDetails = () => {
     setShowDuplicatePopup(false);
     setDuplicateNumbers([]);
   };
+  const columns = [
+    "callDate",
+    "visitdate",
+    "callNumber",
+    "brandName",
+    "customerName",
+    "address",
+    "route",
+    "contactNumber",
+    "whatsappNumber",
+    "engineer",
+    "productsName",
+    "warrantyTerms",
+    "TAT",
+    "serviceType",
+    "remarks",
+    "parts",
+    "jobStatus",
+    "modelNumber",
+    "iduser",
+    "closerCode",
+    "dateofPurchase",
+    "oduser",
+    "followupdate",
+    "gddate",
+    "receivefromEngineer",
+    "amountReceived",
+    "commissionow",
+    "serviceChange",
+    "commissionDate",
+    "NPS",
+    "incentive",
+    "expenses",
+    "approval",
+    "totalAmount",
+    "commissioniw",
+    "partamount",
+  ];
 
   return (
     <AdminDashboardTemplate>
@@ -769,6 +807,7 @@ const ManageCallDetails = () => {
                 ? format(appliedVisitDateRange[0].endDate, "yyyy-MM-dd")
                 : undefined,
             }}
+            columns={columns}
             fileName="Filtered_Call_Details.xlsx"
           />
         </div>
