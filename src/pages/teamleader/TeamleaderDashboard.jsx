@@ -1069,24 +1069,28 @@ const TeamleaderDashboard = () => {
                       <button
                         className="text-[#5BC0DE] group-hover:text-green-300"
                         onClick={() => handleViewClick(detail)}
+                        title="View"
                       >
                         <FiEye />
                       </button>
                       <button
                         onClick={() => handleDuplicateClick(detail)}
-                        className=" text-pink-600 group-hover:text-purple-300"
+                        className=" text-pink-600 relative group group-hover:text-purple-300"
+                        title="Duplicate"
                       >
                         <BiSolidDuplicate />
                       </button>
                       <button
                         className="text-yellow-500 group-hover:text-yellow-300"
                         onClick={() => handleEditClick(detail.calldetailsId)}
+                        title="Edit"
                       >
                         <FiEdit />
                       </button>
                       <div
                         onClick={() => handleCopy(detail)}
                         className="cursor-pointer text-[#c33434] group-hover:text-red-200"
+                        title="Copy"
                       >
                         <MdFileCopy />
                       </div>

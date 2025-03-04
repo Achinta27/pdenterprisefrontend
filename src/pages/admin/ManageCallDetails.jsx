@@ -1189,24 +1189,28 @@ const ManageCallDetails = () => {
                       <button
                         className="text-[#5BC0DE] group-hover:text-green-300"
                         onClick={() => handleViewClick(detail)}
+                        title="View"
                       >
                         <FiEye />
                       </button>
                       <button
                         onClick={() => handleDuplicateClick(detail)}
                         className=" text-pink-600 group-hover:text-purple-300"
+                        title="Duplicate"
                       >
                         <BiSolidDuplicate />
                       </button>
                       <button
                         className="text-yellow-500 group-hover:text-yellow-300"
                         onClick={() => handleEditClick(detail.calldetailsId)}
+                        title="Edit"
                       >
                         <FiEdit />
                       </button>
                       <button
                         className="text-[#D53F3A] group-hover:text-red-200"
                         onClick={() => handleDeleteClick(detail)}
+                        title="Delete"
                       >
                         <RiDeleteBin5Line />
                       </button>
