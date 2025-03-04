@@ -1180,7 +1180,7 @@ const ManageCallDetails = () => {
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 ">
                       <button
                         onClick={() => handleProceedClick(detail.calldetailsId)}
-                        className="bg-blue-500 hover:bg-green-600 text-white px-3 py-1 rounded-sm"
+                        className="bg-blue-500 hover:bg-green-500 text-white px-3 py-1 rounded-sm"
                       >
                         Proceed
                       </button>
