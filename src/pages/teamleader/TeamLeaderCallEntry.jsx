@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -127,6 +127,22 @@ const TeamLeaderCallEntry = () => {
     return formValid && Object.keys(newErrors).length === 0;
   };
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedData = localStorage.getItem("duplicatedCallDetail");
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setFormData((prev) => ({
+        ...prev,
+        customerName: parsedData.customerName,
+        contactNumber: parsedData.contactNumber,
+        whatsappNumber: parsedData.whatsappNumber,
+        address: parsedData.address,
+        route: parsedData.route,
+      }));
+      localStorage.removeItem("duplicatedCallDetail");
+    }
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -201,6 +217,25 @@ const TeamLeaderCallEntry = () => {
       setLoading(false);
     }
   };
+
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Check if the user pressed Ctrl+S
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault(); // Prevent the default browser action for Ctrl+S (which is saving the page)
+        formRef.current.requestSubmit(); // Trigger the form submission logic
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -302,11 +337,7 @@ const TeamLeaderCallEntry = () => {
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-4">Add Call Details</h2>
         <form
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-            }
-          }}
+          ref={formRef}
           onSubmit={handleSubmit}
           className="grid grid-cols-2 gap-6 w-full"
         >

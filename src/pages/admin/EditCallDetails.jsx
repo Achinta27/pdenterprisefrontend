@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
@@ -248,6 +248,25 @@ const EditCallDetails = () => {
     }
   };
 
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Check if the user pressed Ctrl+S
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault(); // Prevent the default browser action for Ctrl+S (which is saving the page)
+        formRef.current.requestSubmit(); // Trigger the form submission logic
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, []);
+
   useEffect(() => {
     const { serviceChange, incentive, NPS, approval, expenses, commissioniw } =
       formData;
@@ -388,12 +407,13 @@ const EditCallDetails = () => {
     <AdminDashboardTemplate>
       <div className="p-6">
         <form
+          ref={formRef}
+          onSubmit={handleSubmit}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
             }
           }}
-          onSubmit={handleSubmit}
           className="grid grid-cols-2 gap-6 w-full"
         >
           <div className="w-full">

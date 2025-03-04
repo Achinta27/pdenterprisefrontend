@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -77,6 +77,23 @@ const AddCallDetails = () => {
     }
   };
 
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        formRef.current.requestSubmit();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, []);
+
   const validateForm = () => {
     const newErrors = {};
     let formValid = true;
@@ -126,6 +143,22 @@ const AddCallDetails = () => {
   };
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedData = localStorage.getItem("duplicatedCallDetail");
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setFormData((prev) => ({
+        ...prev,
+        customerName: parsedData.customerName,
+        contactNumber: parsedData.contactNumber,
+        whatsappNumber: parsedData.whatsappNumber,
+        address: parsedData.address,
+        route: parsedData.route,
+      }));
+      localStorage.removeItem("duplicatedCallDetail");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -304,11 +337,7 @@ const AddCallDetails = () => {
     <AdminDashboardTemplate>
       <div className="p-6">
         <form
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-            }
-          }}
+          ref={formRef}
           onSubmit={handleSubmit}
           className="grid grid-cols-2 gap-6 w-full"
         >

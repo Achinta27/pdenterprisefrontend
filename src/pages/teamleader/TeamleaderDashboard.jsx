@@ -17,6 +17,8 @@ import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { MdFileCopy } from "react-icons/md";
 import ExcelExport from "../../component/ExcelExport";
+import { FaArrowDown, FaArrowUp, FaChevronDown } from "react-icons/fa";
+import { BiSolidDuplicate } from "react-icons/bi";
 
 const TeamleaderDashboard = () => {
   const [callDetails, setCallDetails] = useState([]);
@@ -96,6 +98,10 @@ const TeamleaderDashboard = () => {
   const [showVisitDatePicker, setShowVisitDatePicker] = useState(false);
   const [showVisitDateFilterButtons, setShowVisitDateFilterButtons] =
     useState(false);
+
+  const [sortedColumn, setSortedColumn] = useState("");
+  const [originalData, setOriginalData] = useState([]);
+  const [isSorted, setIsSorted] = useState(false);
 
   useEffect(() => {
     if (teamleaderId) {
@@ -181,6 +187,7 @@ const TeamleaderDashboard = () => {
       setCallDetails(response.data.data);
       setTotalPages(response.data.totalPages);
       setNoEngineerCount(response.data.noEngineerCount);
+      setOriginalData(response.data.data);
     } catch (error) {
       if (!axios.isCancel(error)) {
         console.error("Error fetching call details:", error); // Log only non-cancelation errors
@@ -188,6 +195,39 @@ const TeamleaderDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSort = (column) => {
+    if (sortedColumn === column && isSorted) {
+      setIsSorted(false);
+      setSortedColumn("");
+      setCallDetails(originalData);
+      return;
+    }
+
+    setSortedColumn(column);
+    setIsSorted(true);
+
+    const sortedData = [...callDetails].sort((a, b) => {
+      const valueA = (
+        a[column] ? a[column].toString().toLowerCase() : ""
+      ).replace(/[^a-zA-Z0-9]/g, "");
+      const valueB = (
+        b[column] ? b[column].toString().toLowerCase() : ""
+      ).replace(/[^a-zA-Z0-9]/g, "");
+
+      // Check if the column contains numbers
+      if (typeof a[column] === "number" && typeof b[column] === "number") {
+        return a[column] - b[column]; // Numeric sorting
+      }
+
+      // Default sorting for strings
+      if (valueA < valueB) return -1;
+      if (valueA > valueB) return 1;
+      return 0;
+    });
+
+    setCallDetails(sortedData);
   };
   useEffect(() => {
     fetchFilterOptions();
@@ -473,19 +513,26 @@ const TeamleaderDashboard = () => {
     fetchCallDetailsData(1);
   };
 
+  const renderArrow = (column) => {
+    if (sortedColumn === column && isSorted) {
+      return isSorted === "asc" ? <FaArrowDown /> : <FaArrowUp />;
+    }
+    return <FaArrowDown />;
+  };
+
   const headers = [
-    "Visit Date",
-    "Call No",
-    "Brand",
-    "C. Name",
-    "Mobile No",
-    "Route",
-    "Product",
-    "Warranty ",
-    "Status",
-    "Engineer",
-    "Call Type",
-    "Action",
+    { name: "Visit Date" },
+    { name: "Call No" },
+    { name: "Brand" },
+    { name: "C. Name", column: "customerName" },
+    { name: "Mobile No" },
+    { name: "Route", column: "route" },
+    { name: "Product" },
+    { name: "Warranty" },
+    { name: "Status" },
+    { name: "Engineer", column: "engineer" },
+    { name: "Call Type" },
+    { name: "Action" },
   ];
 
   const formatDate = (dateString) => {
@@ -514,6 +561,11 @@ const TeamleaderDashboard = () => {
   const navigate = useNavigate();
   const handleEditClick = (calldetailsId) => {
     navigate(`/teamleader/edit-calldetails/${teamleaderId}/${calldetailsId}`);
+  };
+
+  const handleDuplicateClick = (callDetail) => {
+    localStorage.setItem("duplicatedCallDetail", JSON.stringify(callDetail));
+    navigate(`/admin/add-calldetails`);
   };
 
   const handleEngineerFilterClick = () => {
@@ -962,18 +1014,28 @@ const TeamleaderDashboard = () => {
           {loading ? (
             <LoadingAnimation />
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col ">
               <div className="flex flex-row p-4 gap-4 font-medium xxl:text-base text-sm bg-black text-white w-full border-b">
                 {headers.map((header, index) => (
-                  <div className="flex-1" key={index}>
-                    {header}
+                  <div
+                    key={index}
+                    className="flex-1 flex items-center gap-3 cursor-pointer"
+                    onClick={() => header.column && handleSort(header.column)} // Only apply sorting to columns with a 'column' key
+                  >
+                    {header.name}
+                    {header.column && (
+                      <button className="text-center">
+                        {renderArrow(header.column)}
+                      </button>
+                    )}{" "}
+                    {/* Only show arrow for sortable columns */}
                   </div>
                 ))}
               </div>
               <div className="flex flex-col h-[60vh] no-scrollbar bg-white overflow-auto">
                 {callDetails.map((detail) => (
                   <div
-                    className="flex flex-row p-3 border-b border-[#BBBBBB] gap-4 font-medium text-[13px] xl:text-xs xxl:text-base w-full"
+                    className="flex flex-row px-2 py-4 border-b border-[#BBBBBB] group hover:bg-sky-500 hover:text-white transition-colors duration-300 gap-4 font-medium text-[13px] xl:text-xs xxl:text-base w-full"
                     key={detail.calldetailsId}
                   >
                     <div className="flex-1 break-words">
@@ -1003,22 +1065,28 @@ const TeamleaderDashboard = () => {
                     <div className="font-semibold flex-1 break-all">
                       {detail.serviceType}
                     </div>
-                    <div className="flex flex-row flex-1 items-center font-semibold gap-5">
+                    <div className="flex flex-row flex-1 items-center text-base font-semibold gap-5">
                       <button
-                        className="text-[#5BC0DE]"
+                        className="text-[#5BC0DE] group-hover:text-green-300"
                         onClick={() => handleViewClick(detail)}
                       >
                         <FiEye />
                       </button>
                       <button
-                        className="text-yellow-500"
+                        onClick={() => handleDuplicateClick(detail)}
+                        className=" text-pink-600 group-hover:text-purple-300"
+                      >
+                        <BiSolidDuplicate />
+                      </button>
+                      <button
+                        className="text-yellow-500 group-hover:text-yellow-300"
                         onClick={() => handleEditClick(detail.calldetailsId)}
                       >
                         <FiEdit />
                       </button>
                       <div
                         onClick={() => handleCopy(detail)}
-                        className="cursor-pointer text-[#c33434]"
+                        className="cursor-pointer text-[#c33434] group-hover:text-red-200"
                       >
                         <MdFileCopy />
                       </div>
