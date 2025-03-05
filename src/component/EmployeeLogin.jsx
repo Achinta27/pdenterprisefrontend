@@ -70,12 +70,19 @@ const EmployeeLogin = () => {
         }
       );
 
-      const { token, name, teamleader } = response.data;
+      const { token, name, role, teamleaderId } = response.data;
+      if (!teamleaderId) {
+        console.log("Error: teamleaderId is undefined in API response");
+        return;
+      }
       localStorage.setItem("token", token);
       localStorage.setItem("name", name);
+      localStorage.setItem("role", role);
+      localStorage.setItem("teamleaderId", teamleaderId);
 
       console.log("Login successful");
-      navigate(`/teamleader/dashboard/${teamleader.teamleaderId}`);
+      window.location.reload();
+      navigate(`/teamleader/dashboard/${teamleaderId}`);
     } catch (error) {
       if (error.response && error.response.data) {
         const errorMessage = error.response.data.message;

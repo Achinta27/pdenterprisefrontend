@@ -19,6 +19,9 @@ const TeamleaderHeader = ({
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("name");
+    localStorage.removeItem("role");
+    localStorage.removeItem("teamleaderId");
+
     window.location.href = "/";
   };
 

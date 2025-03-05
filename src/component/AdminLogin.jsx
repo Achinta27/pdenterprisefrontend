@@ -69,7 +69,9 @@ const AdminLogin = () => {
       const { token, name } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("name", name);
+      localStorage.setItem("role", "admin");
       console.log("Login successful");
+      window.location.reload();
       navigate("/admin/dashboard");
     } catch (error) {
       if (error.response && error.response.data) {
