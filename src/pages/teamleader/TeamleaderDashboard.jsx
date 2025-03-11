@@ -565,7 +565,7 @@ const TeamleaderDashboard = () => {
 
   const handleDuplicateClick = (callDetail) => {
     localStorage.setItem("duplicatedCallDetail", JSON.stringify(callDetail));
-    navigate(`/admin/add-calldetails`);
+    navigate(`/teamleader/add-calldetails/${teamleaderId}`);
   };
 
   const handleEngineerFilterClick = () => {
