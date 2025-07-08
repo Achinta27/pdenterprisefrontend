@@ -222,16 +222,14 @@ const TeamLeaderCallEntry = () => {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      // Check if the user pressed Ctrl+S
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault(); // Prevent the default browser action for Ctrl+S (which is saving the page)
-        formRef.current.requestSubmit(); // Trigger the form submission logic
+        e.preventDefault();
+        formRef.current.requestSubmit();
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
 
-    // Cleanup event listener on component unmount
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };

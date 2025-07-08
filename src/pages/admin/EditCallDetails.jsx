@@ -701,7 +701,7 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Closer Code</label>
+            <label className="form-label">Actual Receive</label>
             <input
               type="text"
               name="closerCode"

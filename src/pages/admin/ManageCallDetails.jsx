@@ -33,6 +33,8 @@ const ManageCallDetails = () => {
   const [jobStatusFilter, setJobStatusFilter] = useState(null);
   const [isCommissionFilterActive, setIsCommissionFilterActive] =
     useState(false);
+  const [amountMissmatchedFilterActive, setAmountMissmatchedFilterActive] =
+    useState(false);
   const [followupfilter, setFollowupfilter] = useState([]);
   const navigate = useNavigate();
 
@@ -67,6 +69,7 @@ const ManageCallDetails = () => {
   const [users, setUsers] = useState([]);
   const [selectedTeamleader, setSelectedTeamleader] = useState("");
   const [noEngineerCount, setNoEngineerCount] = useState(0);
+  const [amountMissmatchedCount, setAmountMissmatchedCount] = useState(0);
 
   const [debouncedSearchFilter] = useDebounce(searchFilter, 300);
   const [debouncedBrand] = useDebounce(selectedBrand, 300);
@@ -131,6 +134,7 @@ const ManageCallDetails = () => {
     debouncedSearchFilter,
     isEngineerFilterActive,
     isCommissionFilterActive,
+    amountMissmatchedFilterActive,
     jobStatusFilter,
     followupfilter,
     debouncedDateRange,
@@ -181,6 +185,7 @@ const ManageCallDetails = () => {
       number: debouncedSearchFilter || undefined,
       noEngineer: isEngineerFilterActive ? true : undefined,
       commissionOw: isCommissionFilterActive ? true : undefined,
+      amountmissmatched: amountMissmatchedFilterActive ? true : undefined,
       notClose: jobStatusFilter === "Not Close" ? true : undefined,
       followup: followupfilter === "FollowUp" ? true : undefined,
       teamleaderId: debouncedTeamleader || undefined,
@@ -202,6 +207,7 @@ const ManageCallDetails = () => {
       setCallDetails(response.data.data);
       setTotalPages(response.data.totalPages);
       setNoEngineerCount(response.data.noEngineerCount);
+      setAmountMissmatchedCount(response.data.amountMissMatchedCount);
       setOriginalData(response.data.data);
     } catch (error) {
       if (!axios.isCancel(error)) {
@@ -526,6 +532,12 @@ const ManageCallDetails = () => {
   const handleCommissionFilterClick = () => {
     setIsCommissionFilterActive((prevState) => !prevState);
     setCurrentPage(1);
+  };
+
+  const handleAmountMissmatchedFilterClick = () => {
+    setAmountMissmatchedFilterActive((prevState) => !prevState);
+    setCurrentPage(1);
+    fetchCallDetailsData(1);
   };
 
   const handleFollowUpClick = () => {
@@ -862,6 +874,18 @@ const ManageCallDetails = () => {
             columns={columns}
             fileName="Filtered_Call_Details.xlsx"
           />
+          <button
+            onClick={handleAmountMissmatchedFilterClick}
+            className={`text-black w-fit font-medium bg-[#EEEEEE] text-sm px-4 py-1 rounded-md shadow-custom ${
+              amountMissmatchedFilterActive
+                ? "bg-blue-500 text-white"
+                : amountMissmatchedCount > 0
+                ? "animate-blink "
+                : ""
+            }`}
+          >
+            Amount Missmatched
+          </button>
         </div>
 
         <div className="flex flex-wrap gap-4 items-center  ">

@@ -348,7 +348,6 @@ const AddCallDetails = () => {
               onChange={(date) => handleDateChange(date, "callDate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
-              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>
@@ -626,7 +625,7 @@ const AddCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Closer Code</label>
+            <label className="form-label">Actual Receive</label>
             <input
               type="text"
               name="closerCode"
