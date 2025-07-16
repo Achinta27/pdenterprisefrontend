@@ -851,6 +851,9 @@ const ManageCallDetails = () => {
               commissionOw: isCommissionFilterActive ? true : undefined,
               followup: jobStatusFilter === "FollowUp" ? true : undefined,
               notClose: jobStatusFilter === "Not Close" ? true : undefined,
+              amountmissmatched: amountMissmatchedFilterActive
+                ? true
+                : undefined,
               startDate: appliedDateRange
                 ? format(appliedDateRange[0].startDate, "yyyy-MM-dd")
                 : undefined,
