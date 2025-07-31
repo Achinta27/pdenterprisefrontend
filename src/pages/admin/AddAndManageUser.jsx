@@ -58,6 +58,10 @@ const AddAndManageUser = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!password.trim()) {
+      alert("Please enter a password.");
+      return;
+    }
     setLoading(true);
     setMessage("");
     setError("");

@@ -556,6 +556,9 @@ const TeamleaderDashboard = () => {
     if (key.toLowerCase().includes("date")) {
       return formatDate(value);
     }
+    if (key.toLowerCase().includes("engineer")) {
+      return value.engineername;
+    }
     return value;
   };
   const navigate = useNavigate();
@@ -948,8 +951,8 @@ const TeamleaderDashboard = () => {
             >
               <option value="">By Engineer</option>
               {filterOptions.engineers.map((engineer, index) => (
-                <option key={index} value={engineer}>
-                  {engineer}
+                <option key={index} value={engineer._id}>
+                  {engineer.engineername}
                 </option>
               ))}
             </select>
@@ -1060,7 +1063,7 @@ const TeamleaderDashboard = () => {
                     </div>
                     <div className="flex-1 break-all">{detail.jobStatus}</div>
                     <div className="flex-1 break-all">
-                      {detail.engineer || "Not Assign"}
+                      {detail.engineer.engineername || "Not Assign"}
                     </div>
                     <div className="font-semibold flex-1 break-all">
                       {detail.serviceType}

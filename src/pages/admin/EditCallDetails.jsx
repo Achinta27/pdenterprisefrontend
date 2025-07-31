@@ -124,7 +124,7 @@ const EditCallDetails = () => {
         route: callDetail.route,
         contactNumber: callDetail.contactNumber,
         whatsappNumber: callDetail.whatsappNumber,
-        engineer: callDetail.engineer,
+        engineer: callDetail.engineer._id,
         productsName: callDetail.productsName,
         warrantyTerms: callDetail.warrantyTerms,
         TAT: callDetail.TAT,
@@ -219,6 +219,28 @@ const EditCallDetails = () => {
       );
 
       if (response.status === 200) {
+        if (formData.jobStatus === "Engineer Assigned") {
+          try {
+            await axios.post(
+              `${import.meta.env.VITE_BASE_URL}/api/notifications/send`,
+              {
+                targetUserId: formData.engineer,
+                title: "New Call has been Assigned",
+                body: `A new call ${
+                  formData.callNumber
+                } has been assigned to you on ${new Date(
+                  formData.callDate
+                ).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}. Please check the call details.`,
+              }
+            );
+          } catch (error) {
+            console.error("Error sending FCM notification:", error);
+          }
+        }
         navigate(`/admin/dashboard`);
         setMessage("Call Details Updated Successfully");
       } else {
@@ -545,7 +567,7 @@ const EditCallDetails = () => {
             >
               <option value="">Select Engineer</option>
               {engineers.map((engineer) => (
-                <option key={engineer.engineerId} value={engineer.engineername}>
+                <option key={engineer.engineerId} value={engineer._id}>
                   {engineer.engineername}
                 </option>
               ))}

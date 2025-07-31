@@ -12,6 +12,7 @@ const AddAndManageEngineer = () => {
   const [engineers, setEngineers] = useState([]);
   const [error, setError] = useState("");
   const [mobileNumberError, setMobileNumberError] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     fetchEngineers();
@@ -76,6 +77,22 @@ const AddAndManageEngineer = () => {
     }
   };
 
+  const generatePassword = () => {
+    if (engineername && engineerMobilenumber.length >= 6) {
+      // Capitalize the first letter of the name
+      const capitalizedFirstLetter = engineername.charAt(0).toUpperCase();
+      const restOfName = engineername.substring(1, 4); // The remaining characters after the first letter
+
+      const passwordPart = `${capitalizedFirstLetter}${restOfName}@${engineerMobilenumber.substring(
+        0,
+        2
+      )}#${engineerMobilenumber.substring(2, 4)}`;
+      setPassword(passwordPart);
+    } else {
+      setPassword("Invalid Data for Password Generation");
+    }
+  };
+
   return (
     <AdminDashboardTemplate>
       <div className="p-4 flex flex-col gap-6">
@@ -120,6 +137,25 @@ const AddAndManageEngineer = () => {
               className="w-full h-[3.5rem] p-2 focus:outline-none outline-[#191919] bg-[white] text-black rounded-md border border-[#CCCCCC]"
               placeholder="City"
             />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-lg text-black">Password</label>
+            <div className="flex gap-4 flex-col">
+              <input
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-[3.5rem] p-2 focus:outline-none outline-[#191919] bg-[white] text-black rounded-md border border-[#CCCCCC]"
+                placeholder="Password"
+              />
+              <button
+                type="button"
+                onClick={generatePassword}
+                className="mt-2 text-black text-start ml-4 hover:underline"
+              >
+                Generate Password
+              </button>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-lg text-transparent">Submit</label>

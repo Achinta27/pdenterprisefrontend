@@ -12,6 +12,7 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
   const [editedEngineerMobileNumber, setEditedEngineerMobileNumber] =
     useState("");
   const [editedEngineerCity, setEditedEngineerCity] = useState("");
+  const [editedEngineerPasswored, setEditedEngineerPasswored] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [engineerToDelete, setEngineerToDelete] = useState(null);
 
@@ -46,6 +47,7 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
           engineername: editedEngineerName,
           engineerMobilenumber: editedEngineerMobileNumber,
           engineerCity: editedEngineerCity,
+          password: editedEngineerPasswored.trim(),
         }
       );
 
@@ -154,6 +156,22 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
     return pageNumbers;
   };
 
+  const generatePassword = () => {
+    if (editedEngineerName && editedEngineerMobileNumber.length >= 6) {
+      // Capitalize the first letter of the name
+      const capitalizedFirstLetter = editedEngineerName.charAt(0).toUpperCase();
+      const restOfName = editedEngineerName.substring(1, 4); // The remaining characters after the first letter
+
+      const passwordPart = `${capitalizedFirstLetter}${restOfName}@${editedEngineerMobileNumber.substring(
+        0,
+        2
+      )}#${editedEngineerMobileNumber.substring(2, 4)}`;
+      setEditedEngineerPasswored(passwordPart);
+    } else {
+      setEditedEngineerPasswored("Invalid Data for Password Generation");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div className="lg:w-[90%] sm:w-full">
@@ -198,6 +216,23 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
                         onChange={(e) => setEditedEngineerCity(e.target.value)}
                         className="w-full h-[3.5rem] p-2 focus:outline-none outline-[#5BC0DE] bg-[white] border  text-[#FF2722] rounded-sm"
                       />
+                    </div>
+                    <div className="w-[20%]">
+                      <input
+                        type="text"
+                        value={editedEngineerPasswored}
+                        onChange={(e) =>
+                          setEditedEngineerPasswored(e.target.value)
+                        }
+                        className="w-full h-[3.5rem] p-2 focus:outline-none outline-[#5BC0DE] bg-[white] border  text-[#FF2722] rounded-sm"
+                        placeholder="Password"
+                      />
+                      <button
+                        onClick={generatePassword}
+                        className="text-[#5BC0DE]"
+                      >
+                        Generate Password
+                      </button>
                     </div>
                     <div className="flex flex-row items-center w-[20%] font-semibold gap-5">
                       <button

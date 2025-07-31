@@ -14,12 +14,11 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
 import { useDebounce } from "use-debounce";
-import { FaArrowDown, FaArrowUp, FaChevronDown } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { BiSolidDuplicate } from "react-icons/bi";
 
 const ManageCallDetails = () => {
   const [callDetails, setCallDetails] = useState([]);
-  const [cachedPages, setCachedPages] = useState({}); // Cache for pages
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCallDetail, setSelectedCallDetail] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -681,9 +680,13 @@ const ManageCallDetails = () => {
   };
 
   const formatValue = (key, value) => {
+    console.log(key, value);
     if (!value) return "N/A";
     if (key.toLowerCase().includes("date")) {
       return formatDate(value);
+    }
+    if (key.toLowerCase().includes("engineer")) {
+      return value.engineername;
     }
     return value;
   };
@@ -741,6 +744,7 @@ const ManageCallDetails = () => {
     setShowDuplicatePopup(false);
     setDuplicateNumbers([]);
   };
+
   const columns = [
     "callDate",
     "visitdate",
@@ -1086,8 +1090,8 @@ const ManageCallDetails = () => {
             >
               <option value="">By Engineer</option>
               {filterOptions.engineers.map((engineer, index) => (
-                <option key={index} value={engineer}>
-                  {engineer}
+                <option key={index} value={engineer._id}>
+                  {engineer.engineername}
                 </option>
               ))}
             </select>
