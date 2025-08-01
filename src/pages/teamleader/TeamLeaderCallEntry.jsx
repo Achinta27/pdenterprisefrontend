@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import  { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -368,7 +368,6 @@ const TeamLeaderCallEntry = () => {
               onChange={(date) => handleDateChange(date, "callDate")}
               className="form-input"
               dateFormat="yyyy-MM-dd"
-              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>

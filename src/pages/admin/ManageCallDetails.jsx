@@ -680,7 +680,6 @@ const ManageCallDetails = () => {
   };
 
   const formatValue = (key, value) => {
-    console.log(key, value);
     if (!value) return "N/A";
     if (key.toLowerCase().includes("date")) {
       return formatDate(value);

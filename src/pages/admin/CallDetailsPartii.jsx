@@ -365,7 +365,7 @@ const CallDetailsPartii = () => {
             </div>
 
             <div>
-              <label className="form-label">Expenses (Calculate)</label>
+              <label className="form-label">Advance</label>
               <input
                 type="text"
                 name="expenses"

@@ -1063,7 +1063,7 @@ const TeamleaderDashboard = () => {
                     </div>
                     <div className="flex-1 break-all">{detail.jobStatus}</div>
                     <div className="flex-1 break-all">
-                      {detail.engineer.engineername || "Not Assign"}
+                      {detail.engineer?.engineername || "Not Assign"}
                     </div>
                     <div className="font-semibold flex-1 break-all">
                       {detail.serviceType}

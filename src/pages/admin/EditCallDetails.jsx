@@ -124,7 +124,7 @@ const EditCallDetails = () => {
         route: callDetail.route,
         contactNumber: callDetail.contactNumber,
         whatsappNumber: callDetail.whatsappNumber,
-        engineer: callDetail.engineer._id,
+        engineer: callDetail.engineer._id ?? "",
         productsName: callDetail.productsName,
         warrantyTerms: callDetail.warrantyTerms,
         TAT: callDetail.TAT,
@@ -882,7 +882,7 @@ const EditCallDetails = () => {
           </div>
 
           <div>
-            <label className="form-label">Expenses (Calculate)</label>
+            <label className="form-label">Advance</label>
             <input
               type="text"
               name="expenses"
