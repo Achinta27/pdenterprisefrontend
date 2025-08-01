@@ -52,7 +52,7 @@ const AddAndManageEngineer = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/enginnerdetails/create`,
-        { engineername, engineerMobilenumber, engineerCity }
+        { engineername, engineerMobilenumber, engineerCity, password }
       );
 
       if (response.status === 201) {
@@ -60,6 +60,7 @@ const AddAndManageEngineer = () => {
         setEngineerName("");
         setEngineerMobileNumber("");
         setEngineerCity("");
+        setPassword("");
 
         // Update the engineers state with the newly added engineer
         setEngineers((prevEngineers) => [

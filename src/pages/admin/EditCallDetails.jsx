@@ -124,7 +124,7 @@ const EditCallDetails = () => {
         route: callDetail.route,
         contactNumber: callDetail.contactNumber,
         whatsappNumber: callDetail.whatsappNumber,
-        engineer: callDetail.engineer._id ?? "",
+        engineer: callDetail.engineer ? callDetail.engineer._id : "",
         productsName: callDetail.productsName,
         warrantyTerms: callDetail.warrantyTerms,
         TAT: callDetail.TAT,
