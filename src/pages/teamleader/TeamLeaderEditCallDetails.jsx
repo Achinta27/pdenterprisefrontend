@@ -397,7 +397,6 @@ const TeamLeaderEditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
-              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>
