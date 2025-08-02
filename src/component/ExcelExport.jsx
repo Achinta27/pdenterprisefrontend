@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 
@@ -47,6 +47,9 @@ const ExcelExport = ({ filters, fileName = "call_details", columns }) => {
 
         const dataToExport = response.data.data.map((detail) =>
           columns.reduce((obj, col) => {
+            if (col === "engineer") {
+              obj[col] = detail.engineer.engineername || "";
+            }
             obj[col] = detail[col] || "";
             return obj;
           }, {})
