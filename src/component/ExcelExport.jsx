@@ -47,10 +47,12 @@ const ExcelExport = ({ filters, fileName = "call_details", columns }) => {
 
         const dataToExport = response.data.data.map((detail) =>
           columns.reduce((obj, col) => {
-            if (col === "engineer") {
-              obj[col] = detail.engineer.engineername || "";
-            }
             obj[col] = detail[col] || "";
+
+            if (col === "engineer") {
+              obj[col] = detail[col]?.engineername || "";
+              console.log(detail[col]);
+            }
             return obj;
           }, {})
         );
