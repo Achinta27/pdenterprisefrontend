@@ -45,7 +45,6 @@ const TeamLeaderEditCallDetails = () => {
     totalAmount: "",
     commissioniw: "",
     partamount: "",
-    service_images: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -57,6 +56,7 @@ const TeamLeaderEditCallDetails = () => {
   const [warranties, setWarranties] = useState([]);
   const [services, setServices] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
+  const [serviceImages, setServiceImages] = useState([]);
 
   useEffect(() => {
     fetchDropdownData();
@@ -136,8 +136,8 @@ const TeamLeaderEditCallDetails = () => {
         gddate: parseDate(callDetail.gddate),
         receivefromEngineer: callDetail.receivefromEngineer,
         amountReceived: callDetail.amountReceived,
-        service_images: callDetail.service_images,
       });
+      setServiceImages(callDetail.service_images);
     } catch (error) {
       console.error("Error fetching call detail:", error);
     }
@@ -196,22 +196,25 @@ const TeamLeaderEditCallDetails = () => {
 
     const formdata = new FormData();
 
-    if (formData.service_images.length <= 0) {
-      formdata.append("service_images", []);
-    }
+    if (serviceImages.length <= 0) {
+      formdata.append("service_images", JSON.stringify([]));
+    } else {
+      serviceImages.forEach((image) => {
+        if (!image.hasOwnProperty("public_id")) {
+          formdata.append("service_images", image);
+        }
+      });
 
-    formData.service_images?.forEach((image) => {
-      if (!image.hasOwnProperty("public_id")) {
-        formdata.append("service_images", image);
+      const channgedPicture = serviceImages.filter((img) =>
+        img.hasOwnProperty("public_id")
+      );
+
+      if (channgedPicture?.length > 0) {
+        formdata.append(
+          "service_images",
+          JSON.stringify(channgedPicture ?? [])
+        );
       }
-    });
-
-    const channgedPicture = formData.service_images?.filter((img) =>
-      img.hasOwnProperty("public_id")
-    );
-
-    if (channgedPicture?.length > 0) {
-      formdata.append("service_images", JSON.stringify(channgedPicture ?? []));
     }
 
     try {
@@ -219,10 +222,7 @@ const TeamLeaderEditCallDetails = () => {
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/update/${calldetailsId}`,
-        {
-          ...formData,
-          service_images: JSON.stringify(formData.service_images ?? []),
-        }
+        formData
       );
 
       await axios.put(
@@ -420,9 +420,9 @@ const TeamLeaderEditCallDetails = () => {
   };
 
   const handleImageChange = (index) => {
-    const images = [...formData.service_images];
+    const images = [...serviceImages];
     images.splice(index, 1);
-    setFormData((prev) => ({ ...prev, service_images: images }));
+    setServiceImages((prev) => [...prev, ...images]);
   };
 
   return (
@@ -785,10 +785,7 @@ const TeamLeaderEditCallDetails = () => {
               name="service_images"
               className="form-input"
               onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  service_images: prev.service_images.concat(e.target.files[0]),
-                }))
+                setServiceImages((prev) => [...prev, e.target.files[0]])
               }
             />
             <div className="flex flex-wrap gap-4 mt-3">

@@ -45,7 +45,6 @@ const EditCallDetails = () => {
     totalAmount: "",
     commissioniw: null,
     partamount: null,
-    service_images: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -57,6 +56,7 @@ const EditCallDetails = () => {
   const [warranties, setWarranties] = useState([]);
   const [services, setServices] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
+  const [serviceImages, setServiceImages] = useState([]);
 
   useEffect(() => {
     fetchDropdownData();
@@ -153,8 +153,8 @@ const EditCallDetails = () => {
         totalAmount: callDetail.totalAmount,
         commissioniw: callDetail.commissioniw,
         partamount: callDetail.partamount,
-        service_images: callDetail.service_images,
       });
+      setServiceImages(callDetail.service_images);
     } catch (error) {
       console.error("Error fetching call detail:", error);
     }
@@ -215,22 +215,25 @@ const EditCallDetails = () => {
 
     const formdata = new FormData();
 
-    if (formData.service_images.length <= 0) {
-      formdata.append("service_images", []);
-    }
+    if (serviceImages.length <= 0) {
+      formdata.append("service_images", JSON.stringify([]));
+    } else {
+      serviceImages.forEach((image) => {
+        if (!image.hasOwnProperty("public_id")) {
+          formdata.append("service_images", image);
+        }
+      });
 
-    formData.service_images?.forEach((image) => {
-      if (!image.hasOwnProperty("public_id")) {
-        formdata.append("service_images", image);
+      const channgedPicture = serviceImages.filter((img) =>
+        img.hasOwnProperty("public_id")
+      );
+
+      if (channgedPicture?.length > 0) {
+        formdata.append(
+          "service_images",
+          JSON.stringify(channgedPicture ?? [])
+        );
       }
-    });
-
-    const channgedPicture = formData.service_images?.filter((img) =>
-      img.hasOwnProperty("public_id")
-    );
-
-    if (channgedPicture?.length > 0) {
-      formdata.append("service_images", JSON.stringify(channgedPicture ?? []));
     }
 
     try {
@@ -238,10 +241,7 @@ const EditCallDetails = () => {
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/update/${calldetailsId}`,
-        {
-          ...formData,
-          service_images: JSON.stringify(formData.service_images ?? []),
-        }
+        formData
       );
 
       await axios.put(
@@ -464,9 +464,9 @@ const EditCallDetails = () => {
   };
 
   const handleImageChange = (index) => {
-    const images = [...formData.service_images];
+    const images = [...serviceImages];
     images.splice(index, 1);
-    setFormData((prev) => ({ ...prev, service_images: images }));
+    setServiceImages((prev) => [...prev, ...images]);
   };
 
   return (
@@ -986,15 +986,12 @@ const EditCallDetails = () => {
               accept="image/*"
               name="service_images"
               onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  service_images: prev.service_images.concat(e.target.files[0]),
-                }))
+                setServiceImages((prev) => [...prev, e.target.files[0]])
               }
               className="form-input"
             />
             <div className="flex flex-wrap gap-4 mt-3">
-              {formData.service_images?.map((image, index) => (
+              {serviceImages.map((image, index) => (
                 <div key={index} className="relative">
                   <button
                     type="button"
