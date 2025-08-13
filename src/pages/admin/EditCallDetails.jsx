@@ -215,27 +215,33 @@ const EditCallDetails = () => {
 
     const formdata = new FormData();
 
+    if (formData.service_images.length <= 0) {
+      formdata.append("service_images", []);
+    }
+
     formData.service_images?.forEach((image) => {
       if (!image.hasOwnProperty("public_id")) {
         formdata.append("service_images", image);
-      } else {
-        formdata.append(
-          "service_images",
-          JSON.stringify(
-            formData.service_images?.filter((img) =>
-              img.hasOwnProperty("public_id")
-            )
-          )
-        );
       }
     });
+
+    const channgedPicture = formData.service_images?.filter((img) =>
+      img.hasOwnProperty("public_id")
+    );
+
+    if (channgedPicture?.length > 0) {
+      formdata.append("service_images", JSON.stringify(channgedPicture ?? []));
+    }
 
     try {
       const response = await axios.put(
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/update/${calldetailsId}`,
-        formData
+        {
+          ...formData,
+          service_images: JSON.stringify(formData.service_images ?? []),
+        }
       );
 
       await axios.put(
