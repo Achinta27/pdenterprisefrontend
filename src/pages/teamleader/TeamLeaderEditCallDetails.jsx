@@ -422,7 +422,7 @@ const TeamLeaderEditCallDetails = () => {
   const handleImageChange = (index) => {
     const images = [...serviceImages];
     images.splice(index, 1);
-    setServiceImages((prev) => [...prev, ...images]);
+    setServiceImages(images);
   };
 
   return (
@@ -789,7 +789,7 @@ const TeamLeaderEditCallDetails = () => {
               }
             />
             <div className="flex flex-wrap gap-4 mt-3">
-              {formData.service_images?.map((image, index) => (
+              {serviceImages.map((image, index) => (
                 <div key={index} className="relative">
                   <button
                     type="button"

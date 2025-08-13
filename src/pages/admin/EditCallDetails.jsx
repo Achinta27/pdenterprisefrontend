@@ -466,7 +466,7 @@ const EditCallDetails = () => {
   const handleImageChange = (index) => {
     const images = [...serviceImages];
     images.splice(index, 1);
-    setServiceImages((prev) => [...prev, ...images]);
+    setServiceImages(images);
   };
 
   return (
