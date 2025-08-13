@@ -196,14 +196,14 @@ const TeamLeaderEditCallDetails = () => {
 
     const formdata = new FormData();
 
-    formData.service_images.forEach((image) => {
+    formData.service_images?.forEach((image) => {
       if (!image.hasOwnProperty("public_id")) {
         formdata.append("service_images", image);
       } else {
         formdata.append(
           "service_images",
           JSON.stringify(
-            formData.service_images.filter((img) =>
+            formData.service_images?.filter((img) =>
               img.hasOwnProperty("public_id")
             )
           )
