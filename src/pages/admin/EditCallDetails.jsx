@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
+import { IoClose } from "react-icons/io5";
 
 const EditCallDetails = () => {
   const { calldetailsId } = useParams(); // Get the ID from the URL
@@ -44,6 +45,7 @@ const EditCallDetails = () => {
     totalAmount: "",
     commissioniw: null,
     partamount: null,
+    service_images: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -151,6 +153,7 @@ const EditCallDetails = () => {
         totalAmount: callDetail.totalAmount,
         commissioniw: callDetail.commissioniw,
         partamount: callDetail.partamount,
+        service_images: callDetail.service_images,
       });
     } catch (error) {
       console.error("Error fetching call detail:", error);
@@ -210,12 +213,41 @@ const EditCallDetails = () => {
       return;
     }
 
+    const formdata = new FormData();
+
+    formData.service_images.forEach((image) => {
+      if (!image.hasOwnProperty("public_id")) {
+        formdata.append("service_images", image);
+      } else {
+        formdata.append(
+          "service_images",
+          JSON.stringify(
+            formData.service_images.filter((img) =>
+              img.hasOwnProperty("public_id")
+            )
+          )
+        );
+      }
+    });
+
     try {
       const response = await axios.put(
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/update/${calldetailsId}`,
         formData
+      );
+
+      await axios.put(
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/api/calldetails/update/${calldetailsId}`,
+        formdata,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
       if (response.status === 200) {
@@ -423,6 +455,12 @@ const EditCallDetails = () => {
     }
 
     setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleImageChange = (index) => {
+    const images = [...formData.service_images];
+    images.splice(index, 1);
+    setFormData((prev) => ({ ...prev, service_images: images }));
   };
 
   return (
@@ -934,6 +972,39 @@ const EditCallDetails = () => {
               onChange={handleInputChange}
               className="form-input"
             />
+          </div>
+          <div className="col-span-2">
+            <label className="form-label">Service Images</label>
+            <input
+              type="file"
+              accept="image/*"
+              name="service_images"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  service_images: prev.service_images.concat(e.target.files[0]),
+                }))
+              }
+              className="form-input"
+            />
+            <div className="flex flex-wrap gap-4 mt-3">
+              {formData.service_images?.map((image, index) => (
+                <div key={index} className="relative">
+                  <button
+                    type="button"
+                    className="absolute top-0 right-0 text-xl"
+                    onClick={() => handleImageChange(index)}
+                  >
+                    <IoClose />
+                  </button>
+                  <img
+                    src={image.secure_url || URL.createObjectURL(image)}
+                    alt={`Service Image`}
+                    className="w-full h-60 object-cover rounded-lg"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-row gap-4 w-full items-center">
             <div className="xlg:!w-[30%] sm:!w-[50%] lg:!w-[40%] mt-4">
