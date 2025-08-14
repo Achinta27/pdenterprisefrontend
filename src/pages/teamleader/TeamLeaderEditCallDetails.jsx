@@ -778,15 +778,22 @@ const TeamLeaderEditCallDetails = () => {
           </div>
 
           <div className="col-span-2">
-            <label className="form-label">Part Amount</label>
+            <label className="form-label">Service Images</label>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*, video/mp4"
               name="service_images"
               className="form-input"
-              onChange={(e) =>
-                setServiceImages((prev) => [...prev, e.target.files[0]])
-              }
+              onChange={(e) => {
+                const newFiles = Array.from(e.target.files);
+                for (const file of newFiles) {
+                  if (file.size > 10000000) {
+                    alert("Image size should be less than 10MB");
+                    return; // This returns from the entire onChange handler
+                  }
+                }
+                setServiceImages((prev) => [...prev, ...newFiles]);
+              }}
             />
             <div className="flex flex-wrap gap-4 mt-3">
               {serviceImages.map((image, index) => (
@@ -798,11 +805,42 @@ const TeamLeaderEditCallDetails = () => {
                   >
                     <IoClose />
                   </button>
-                  <img
-                    src={image.secure_url || URL.createObjectURL(image)}
-                    alt={`Service Image`}
-                    className="w-full h-60 object-cover rounded-lg"
-                  />
+                  {image.type?.startsWith("image/") && (
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`Image ${index}`}
+                      className="w-32 h-60 object-cover"
+                    />
+                  )}
+                  {image.type?.startsWith("video/") && (
+                    <video
+                      src={URL.createObjectURL(image)}
+                      controls
+                      className="w-32 h-60 object-cover"
+                    />
+                  )}
+                  {image.secure_url?.endsWith(".mp4") && (
+                    <video
+                      src={image.secure_url}
+                      controls
+                      className="w-32 h-60 object-cover"
+                    />
+                  )}
+                  {image.secure_url?.endsWith(".jpg") && (
+                    <img
+                      src={image.secure_url}
+                      alt={`Image ${index}`}
+                      className="w-32 h-60 object-cover"
+                    />
+                  )}
+                  {image.secure_url?.endsWith(".png") && (
+                    <img
+                      src={image.secure_url}
+                      alt={`Image ${index}`}
+                      className="w-32 h-60 object-cover"
+                    />
+                  )}
+                  {!image.secure_url && <div className="w-32 h-60" />}
                 </div>
               ))}
             </div>
