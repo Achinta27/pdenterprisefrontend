@@ -800,7 +800,7 @@ const TeamLeaderEditCallDetails = () => {
                 <div key={index} className="relative">
                   <button
                     type="button"
-                    className="absolute top-0 right-0 text-xl"
+                    className="absolute top-0 right-0 text-xl z-10"
                     onClick={() => handleImageChange(index)}
                   >
                     <IoClose />
