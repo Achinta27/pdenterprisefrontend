@@ -154,7 +154,7 @@ const EditCallDetails = () => {
         commissioniw: callDetail.commissioniw,
         partamount: callDetail.partamount,
       });
-      setServiceImages(callDetail.service_images);
+      setServiceImages(callDetail.service_images ?? []);
     } catch (error) {
       console.error("Error fetching call detail:", error);
     }

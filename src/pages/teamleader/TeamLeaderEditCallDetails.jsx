@@ -137,7 +137,7 @@ const TeamLeaderEditCallDetails = () => {
         receivefromEngineer: callDetail.receivefromEngineer,
         amountReceived: callDetail.amountReceived,
       });
-      setServiceImages(callDetail.service_images);
+      setServiceImages(callDetail.service_images ?? []);
     } catch (error) {
       console.error("Error fetching call detail:", error);
     }
