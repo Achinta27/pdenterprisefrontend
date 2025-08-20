@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { FiEye, FiEdit } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
@@ -372,7 +372,6 @@ const ManageCallDetails = () => {
     );
   };
 
-  // for GD date filter
 
   const handleGdDateChange = (ranges) => {
     let { startDate, endDate } = ranges.selection;
@@ -510,6 +509,23 @@ const ManageCallDetails = () => {
 
   useEffect(() => {
     fetchFilterOptions();
+  }, []);
+
+  const hasCallRequest = useMemo(async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/callrequests?call_status=Pending`
+      );
+
+      if (response.data.totalCallRequests > 0) {
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Error fetching call requests:", error);
+      return false;
+    }
   }, []);
 
   const fetchFilterOptions = async () => {
@@ -892,6 +908,14 @@ const ManageCallDetails = () => {
           >
             Amount Missmatched
           </button>
+          <Link
+            to={`/admin/call-requests`}
+            className={`text-black w-fit bg-[#EEEEEE] flex justify-center items-center text-sm font-medium px-4 py-1 rounded-md shadow-custom ${
+              hasCallRequest ? "animate-blink" : ""
+            }`}
+          >
+            Customer Call Request
+          </Link>
         </div>
 
         <div className="flex flex-wrap gap-4 items-center  ">

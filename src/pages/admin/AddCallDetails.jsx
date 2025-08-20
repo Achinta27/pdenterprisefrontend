@@ -3,7 +3,7 @@ import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const AddCallDetails = () => {
   const [formData, setFormData] = useState({
@@ -44,9 +44,37 @@ const AddCallDetails = () => {
   const [services, setServices] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     fetchDropdownData();
   }, []);
+
+  useEffect(() => {
+    console.log(searchParams.get("request"));
+    const requestId = searchParams.get("request");
+    async function fetchRequest() {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/callrequests/${requestId}`
+        );
+        setFormData((prev) => ({
+          ...prev,
+          customerName: data.customer.name,
+          serviceType: data.call_service,
+          visitdate: new Date(data.preferred_visit_date),
+          contactNumber: data.customer.mobile_number,
+          address: data.customer.address,
+        }));
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    if (requestId) {
+      fetchRequest();
+    }
+  }, [searchParams]);
 
   const fetchDropdownData = async () => {
     try {

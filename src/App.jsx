@@ -1,14 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 
 import "./App.css";
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  useNavigate,
-} from "react-router-dom";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AddAndManageBrand from "./pages/admin/AddAndManageBrand";
 import AddAndManageProduct from "./pages/admin/AddAndManageProduct";
 import AddAndManageEngineer from "./pages/admin/AddAndManageEngineer";
@@ -26,8 +19,9 @@ import TeamLeaderCallEntry from "./pages/teamleader/TeamLeaderCallEntry";
 import TeamLeaderEditCallDetails from "./pages/teamleader/TeamLeaderEditCallDetails";
 import WaBrodcast from "./pages/admin/WaBrodcast";
 import { AuthContext } from "./context/AuthContext";
+import ManageCallRequests from "./pages/admin/ManageCallRequests";
 
-const ProtectedRoute = ({ element, allowedRole }) => {
+const ProtectedRoute = ({ allowedRole }) => {
   const { user } = useContext(AuthContext);
 
   if (!user) {
@@ -38,7 +32,7 @@ const ProtectedRoute = ({ element, allowedRole }) => {
     return <Navigate to="/" />;
   }
 
-  return element;
+  return <Outlet />;
 };
 
 function App() {
@@ -46,68 +40,73 @@ function App() {
     <Routes>
       <Route path="/" element={<LoginPage />} />
 
-      <Route
-        path="/admin/dashboard"
-        element={
-          <ProtectedRoute element={<ManageCallDetails />} allowedRole="admin" />
-        }
-      />
-      <Route path="/admin/add-calldetails" element={<AddCallDetails />} />
-      <Route path="/admin/manage-calldetails" element={<ManageCallDetails />} />
-      <Route
-        path="/admin/call-details/part2/:calldetailsId"
-        element={<CallDetailsPartii />}
-      />
-      <Route
-        path="/admin/calldetails/edit-calldetails/:calldetailsId"
-        element={<EditCallDetails />}
-      />
+      <Route element={<ProtectedRoute allowedRole="admin" />}>
+        <Route path="/admin/dashboard" element={<ManageCallDetails />} />
+        <Route path="/admin/add-calldetails" element={<AddCallDetails />} />
+        <Route
+          path="/admin/manage-calldetails"
+          element={<ManageCallDetails />}
+        />
+        <Route
+          path="/admin/call-details/part2/:calldetailsId"
+          element={<CallDetailsPartii />}
+        />
+        <Route
+          path="/admin/calldetails/edit-calldetails/:calldetailsId"
+          element={<EditCallDetails />}
+        />
 
-      <Route
-        path="/admin/add-and-manage-brand"
-        element={<AddAndManageBrand />}
-      />
-      <Route
-        path="/admin/add-and-manage-product"
-        element={<AddAndManageProduct />}
-      />
-      <Route
-        path="/admin/add-and-manage-engineer"
-        element={<AddAndManageEngineer />}
-      />
-      <Route
-        path="/admin/add-and-manage-warranty"
-        element={<AddAndManageWarranty />}
-      />
-      <Route
-        path="/admin/add-and-manage-servicetype"
-        element={<AddAndManageServiceType />}
-      />
-      <Route
-        path="/admin/add-and-manage-jobstatus"
-        element={<AddAndManageJobstatus />}
-      />
-      <Route path="/admin/add-and-manage-user" element={<AddAndManageUser />} />
-      <Route path="/admin/wa-brodcast" element={<WaBrodcast />} />
+        <Route
+          path="/admin/add-and-manage-brand"
+          element={<AddAndManageBrand />}
+        />
+        <Route
+          path="/admin/add-and-manage-product"
+          element={<AddAndManageProduct />}
+        />
+        <Route
+          path="/admin/add-and-manage-engineer"
+          element={<AddAndManageEngineer />}
+        />
+        <Route
+          path="/admin/add-and-manage-warranty"
+          element={<AddAndManageWarranty />}
+        />
+        <Route
+          path="/admin/add-and-manage-servicetype"
+          element={<AddAndManageServiceType />}
+        />
+        <Route
+          path="/admin/add-and-manage-jobstatus"
+          element={<AddAndManageJobstatus />}
+        />
+        <Route
+          path="/admin/add-and-manage-user"
+          element={<AddAndManageUser />}
+        />
+        <Route path="/admin/wa-brodcast" element={<WaBrodcast />} />
+        <Route path="/admin/call-requests" element={<ManageCallRequests />} />
+      </Route>
 
       {/* teamleader */}
-      <Route
-        path="/teamleader/dashboard/:teamleaderId"
-        element={
-          <ProtectedRoute
-            element={<TeamleaderDashboard />}
-            allowedRole="TeamLeader"
-          />
-        }
-      />
-      <Route
-        path="/teamleader/add-calldetails/:teamleaderId"
-        element={<TeamLeaderCallEntry />}
-      />
-      <Route
-        path="/teamleader/edit-calldetails/:teamleaderId/:calldetailsId"
-        element={<TeamLeaderEditCallDetails />}
-      />
+      <Route element={<ProtectedRoute allowedRole="TeamLeader" />}>
+        <Route
+          path="/teamleader/dashboard/:teamleaderId"
+          element={<TeamleaderDashboard />}
+        />
+        <Route
+          path="/teamleader/add-calldetails/:teamleaderId"
+          element={<TeamLeaderCallEntry />}
+        />
+        <Route
+          path="/teamleader/edit-calldetails/:teamleaderId/:calldetailsId"
+          element={<TeamLeaderEditCallDetails />}
+        />
+        <Route
+          path="/teamleader/call-requests"
+          element={<ManageCallRequests />}
+        />
+      </Route>
     </Routes>
   );
 }
