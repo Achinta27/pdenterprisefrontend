@@ -70,6 +70,7 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
     setEditedEngineerName("");
     setEditedEngineerMobileNumber("");
     setEditedEngineerCity("");
+    setEditedEngineerPasswored("");
   };
 
   const handleDeleteClick = (engineer) => {

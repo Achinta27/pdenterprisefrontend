@@ -372,7 +372,6 @@ const ManageCallDetails = () => {
     );
   };
 
-
   const handleGdDateChange = (ranges) => {
     let { startDate, endDate } = ranges.selection;
 
@@ -511,21 +510,30 @@ const ManageCallDetails = () => {
     fetchFilterOptions();
   }, []);
 
-  const hasCallRequest = useMemo(async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/callrequests?call_status=Pending`
-      );
+  const [hasCallRequest, setHasCallRequest] = useState(false);
 
-      if (response.data.totalCallRequests > 0) {
-        return true;
+  useEffect(() => {
+    async function getRequestStatus() {
+      try {
+        const response = await axios.get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/callrequests?call_status=Pending`
+        );
+
+        if (response.data.totalCallRequests > 0) {
+          setHasCallRequest(true);
+          return;
+        }
+
+        setHasCallRequest(false);
+      } catch (error) {
+        console.error("Error fetching call requests:", error);
+        setHasCallRequest(false);
       }
-
-      return false;
-    } catch (error) {
-      console.error("Error fetching call requests:", error);
-      return false;
     }
+
+    getRequestStatus();
   }, []);
 
   const fetchFilterOptions = async () => {

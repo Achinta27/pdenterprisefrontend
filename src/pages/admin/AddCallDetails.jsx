@@ -51,7 +51,6 @@ const AddCallDetails = () => {
   }, []);
 
   useEffect(() => {
-    console.log(searchParams.get("request"));
     const requestId = searchParams.get("request");
     async function fetchRequest() {
       try {
@@ -226,6 +225,15 @@ const AddCallDetails = () => {
           } catch (error) {
             console.error("Error sending FCM notification:", error);
           }
+        }
+        const requestId = searchParams.get("request");
+        if (requestId) {
+          await axios.put(
+            `${import.meta.env.VITE_BASE_URL}/api/callrequests/${requestId}`,
+            {
+              call_status: "Accepted",
+            }
+          );
         }
         setMessage("Call Details Created Successfully");
         navigate(`/admin/manage-calldetails`);

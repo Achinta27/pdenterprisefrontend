@@ -346,7 +346,7 @@ export default function ManageCallRequests() {
                         : ""}
                     </div>
                     <div className="flex flex-row flex-1 items-center font-semibold gap-5 text-xl">
-                      {detail.status === "Pending" && (
+                      {detail.call_status === "Pending" && (
                         <button
                           className="text-red-500 group-hover:text-red-200"
                           type="button"
@@ -356,7 +356,7 @@ export default function ManageCallRequests() {
                           <TiCancel />
                         </button>
                       )}
-                      {detail.status === "Pending" && (
+                      {detail.call_status === "Pending" && (
                         <Link
                           className="text-yellow-500 group-hover:text-yellow-300"
                           to={`/admin/add-calldetails?request=${detail._id}`}
