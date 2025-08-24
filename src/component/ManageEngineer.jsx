@@ -34,6 +34,7 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
     setEditedEngineerName(engineer.engineername);
     setEditedEngineerMobileNumber(engineer.engineerMobilenumber);
     setEditedEngineerCity(engineer.engineerCity);
+    setEditedEngineerPasswored("");
   };
 
   const handleSaveClick = async () => {
@@ -57,6 +58,7 @@ const ManageEngineer = ({ engineers, fetchEngineers }) => {
         setEditedEngineerName("");
         setEditedEngineerMobileNumber("");
         setEditedEngineerCity("");
+        setEditedEngineerPasswored("");
       }
     } catch (error) {
       console.error("Error updating engineer:", error);
