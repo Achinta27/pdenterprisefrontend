@@ -102,6 +102,31 @@ const TeamleaderDashboard = () => {
   const [sortedColumn, setSortedColumn] = useState("");
   const [originalData, setOriginalData] = useState([]);
   const [isSorted, setIsSorted] = useState(false);
+  const [hasCallRequest, setHasCallRequest] = useState(false);
+
+  useEffect(() => {
+    async function getRequestStatus() {
+      try {
+        const response = await axios.get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/callrequests?call_status=Pending`
+        );
+
+        if (response.data.totalCallRequests > 0) {
+          setHasCallRequest(true);
+          return;
+        }
+
+        setHasCallRequest(false);
+      } catch (error) {
+        console.error("Error fetching call requests:", error);
+        setHasCallRequest(false);
+      }
+    }
+
+    getRequestStatus();
+  }, []);
 
   useEffect(() => {
     if (teamleaderId) {
@@ -722,6 +747,14 @@ const TeamleaderDashboard = () => {
           >
             Commission OW
           </button>
+          <Link
+            to={`/teamleader/call-requests`}
+            className={`text-black w-fit bg-[#EEEEEE] flex justify-center items-center text-sm font-medium px-4 py-1 rounded-md shadow-custom ${
+              hasCallRequest ? "animate-blink" : ""
+            }`}
+          >
+            Customer Call Request
+          </Link>
           <ExcelExport
             filters={{
               brand: selectedBrand,

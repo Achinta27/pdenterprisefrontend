@@ -59,6 +59,20 @@ const AdminSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
       name: "Add & Manage User",
       link: "/admin/add-and-manage-user",
     },
+    {
+      icon: "/images/customer-logo.png",
+      name: "Customer Management",
+      links: [
+        {
+          name: "Customer List",
+          link: "/admin/customer-management",
+        },
+        {
+          name: "Customer Banner",
+          link: "/admin/customer-banner",
+        },
+      ],
+    },
   ];
 
   const handleIconClick = (index) => {

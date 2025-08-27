@@ -8,8 +8,9 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { TiCancel } from "react-icons/ti";
+import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
 
-export default function ManageCallRequests() {
+export default function TeamLeaderCallRequests() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
@@ -207,7 +208,7 @@ export default function ManageCallRequests() {
   }
 
   return (
-    <AdminDashboardTemplate>
+    <TeamLeaderDashboardTemplate>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-4 items-center  ">
           <div className="flex items-center gap-2">
@@ -405,6 +406,6 @@ export default function ManageCallRequests() {
           </button>
         </div>
       </div>
-    </AdminDashboardTemplate>
+    </TeamLeaderDashboardTemplate>
   );
 }
