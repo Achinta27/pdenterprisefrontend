@@ -6,7 +6,7 @@ import { DateRangePicker } from "react-date-range";
 import LoadingAnimation from "../../component/LoadingAnimation";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { TiCancel } from "react-icons/ti";
 import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
 
@@ -29,6 +29,7 @@ export default function TeamLeaderCallRequests() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [callRequests, setCallRequests] = useState([]);
+  const { teamleaderId } = useParams();
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -360,7 +361,7 @@ export default function TeamLeaderCallRequests() {
                       {detail.call_status === "Pending" && (
                         <Link
                           className="text-yellow-500 group-hover:text-yellow-300"
-                          to={`/admin/add-calldetails?request=${detail._id}`}
+                          to={`/teamleader/add-calldetails/${teamleaderId}?request=${detail._id}`}
                           title="Add to Call"
                         >
                           <FiEdit />
