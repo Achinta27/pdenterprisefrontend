@@ -113,6 +113,10 @@ export default function TeamLeaderCallRequests() {
   ]);
 
   const handleDeleteClick = async (id) => {
+    const conformation = confirm("Are you sure you want to delete?");
+    if (!conformation) {
+      return;
+    }
     try {
       const response = await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`
@@ -190,6 +194,10 @@ export default function TeamLeaderCallRequests() {
   ];
 
   async function rejectRequest(id) {
+    const conformation = confirm("Are you sure you want to reject?");
+    if (!conformation) {
+      return;
+    }
     try {
       const response = await axios.put(
         `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`,
@@ -323,13 +331,13 @@ export default function TeamLeaderCallRequests() {
                     key={detail.callrequestId}
                   >
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.customer.name}
+                      {detail.customer?.name}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.customer.mobile_number}
+                      {detail.customer?.mobile_number}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.customer.area}
+                      {detail.customer?.area}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.call_service}
