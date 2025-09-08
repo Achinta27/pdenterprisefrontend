@@ -748,7 +748,7 @@ const TeamleaderDashboard = () => {
             Commission OW
           </button>
           <Link
-            to={`/teamleader/call-requests`}
+            to={`/teamleader/call-requests/${teamleaderId}`}
             className={`text-black w-fit bg-[#EEEEEE] flex justify-center items-center text-sm font-medium px-4 py-1 rounded-md shadow-custom ${
               hasCallRequest ? "animate-blink" : ""
             }`}

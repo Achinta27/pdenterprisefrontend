@@ -108,7 +108,7 @@ function App() {
           element={<TeamLeaderEditCallDetails />}
         />
         <Route
-          path="/teamleader/call-requests"
+          path="/teamleader/call-requests/:teamleaderId"
           element={<TeamLeaderCallRequests />}
         />
       </Route>

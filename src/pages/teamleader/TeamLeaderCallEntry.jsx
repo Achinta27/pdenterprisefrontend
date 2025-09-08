@@ -1,9 +1,9 @@
-import  { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TeamLeaderDashboardTemplate from "../../templates/TeamLeaderDashboardTemplate";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 const TeamLeaderCallEntry = () => {
   const { teamleaderId } = useParams();
@@ -46,9 +46,36 @@ const TeamLeaderCallEntry = () => {
   const [services, setServices] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     fetchDropdownData();
   }, []);
+
+  useEffect(() => {
+    const requestId = searchParams.get("request");
+    async function fetchRequest() {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/callrequests/${requestId}`
+        );
+        setFormData((prev) => ({
+          ...prev,
+          customerName: data.customer.name,
+          productsName: data.call_service,
+          visitdate: new Date(data.preferred_visit_date),
+          contactNumber: data.customer.mobile_number,
+          address: data.customer.address,
+        }));
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    if (requestId) {
+      fetchRequest();
+    }
+  }, [searchParams]);
 
   const fetchDropdownData = async () => {
     try {
