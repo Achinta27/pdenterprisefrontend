@@ -1028,17 +1028,17 @@ const EditCallDetails = () => {
                       className="w-32 h-60 object-cover"
                     />
                   )}
-                  {image.secure_url?.endsWith(".jpg") && (
+                  {image.content_type?.startsWith("image/") && (
                     <img
                       src={image.secure_url}
                       alt={`Image ${index}`}
                       className="w-32 h-60 object-cover"
                     />
                   )}
-                  {image.secure_url?.endsWith(".png") && (
-                    <img
+                  {image.content_type?.startsWith("video/") && (
+                    <video
                       src={image.secure_url}
-                      alt={`Image ${index}`}
+                      controls
                       className="w-32 h-60 object-cover"
                     />
                   )}
