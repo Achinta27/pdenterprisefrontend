@@ -111,6 +111,10 @@ export default function ManageCallRequests() {
   ]);
 
   const handleDeleteClick = async (id) => {
+    const conformation = confirm("Are you sure you want to delete?");
+    if (!conformation) {
+      return;
+    }
     try {
       const response = await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`
@@ -188,6 +192,10 @@ export default function ManageCallRequests() {
   ];
 
   async function rejectRequest(id) {
+    const conformation = confirm("Are you sure you want to reject?");
+    if (!conformation) {
+      return;
+    }
     try {
       const response = await axios.put(
         `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`,
