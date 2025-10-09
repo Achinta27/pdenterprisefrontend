@@ -223,6 +223,7 @@ const TeamleaderDashboard = () => {
   };
 
   const handleSort = (column) => {
+    // 1. Reset logic (Keep this as is to match your request)
     if (sortedColumn === column && isSorted) {
       setIsSorted(false);
       setSortedColumn("");
@@ -234,19 +235,31 @@ const TeamleaderDashboard = () => {
     setIsSorted(true);
 
     const sortedData = [...callDetails].sort((a, b) => {
-      const valueA = (
-        a[column] ? a[column].toString().toLowerCase() : ""
-      ).replace(/[^a-zA-Z0-9]/g, "");
-      const valueB = (
-        b[column] ? b[column].toString().toLowerCase() : ""
-      ).replace(/[^a-zA-Z0-9]/g, "");
+      let rawValueA, rawValueB;
 
-      // Check if the column contains numbers
-      if (typeof a[column] === "number" && typeof b[column] === "number") {
-        return a[column] - b[column]; // Numeric sorting
+      if (column === "engineername") {
+        rawValueA = a.engineer?.engineername || "Not Assign";
+        rawValueB = b.engineer?.engineername || "Not Assign";
+      } else {
+        rawValueA = a[column];
+        rawValueB = b[column];
       }
 
-      // Default sorting for strings
+      const valueA = (
+        rawValueA ? rawValueA.toString().toLowerCase() : ""
+      ).replace(/[^a-zA-Z0-9]/g, "");
+      const valueB = (
+        rawValueB ? rawValueB.toString().toLowerCase() : ""
+      ).replace(/[^a-zA-Z0-9]/g, "");
+
+      if (
+        typeof rawValueA === "number" &&
+        typeof rawValueB === "number" &&
+        column !== "engineername"
+      ) {
+        return rawValueA - rawValueB; // Numeric sorting
+      }
+
       if (valueA < valueB) return -1;
       if (valueA > valueB) return 1;
       return 0;
@@ -555,7 +568,7 @@ const TeamleaderDashboard = () => {
     { name: "Product" },
     { name: "Warranty" },
     { name: "Status" },
-    { name: "Engineer", column: "engineer" },
+    { name: "Engineer", column: "engineername" },
     { name: "Call Type" },
     { name: "Action" },
   ];
@@ -1077,14 +1090,12 @@ const TeamleaderDashboard = () => {
                     <div className="flex-1 break-words">
                       {formatDate(detail.visitdate)}
                     </div>
-                    <div className="flex-1 break-words">
-                      {detail.callNumber}
-                    </div>
-                    <div className="flex-1 break-words">{detail.brandName}</div>
+                    <div className="flex-1 break-all">{detail.callNumber}</div>
+                    <div className="flex-1 break-all">{detail.brandName}</div>
                     <div className="flex-1 break-all">
                       {detail.customerName}
                     </div>
-                    <div className="flex-1 break-words">
+                    <div className="flex-1 break-all">
                       {detail.contactNumber}
                     </div>
                     <div className="flex-1 break-all">{detail.route}</div>
