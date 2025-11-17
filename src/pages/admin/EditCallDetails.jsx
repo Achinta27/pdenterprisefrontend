@@ -173,13 +173,13 @@ const EditCallDetails = () => {
     }
 
     // Validate WhatsApp number (optional, but if filled, must be exactly 10 digits)
-    if (
-      formData.whatsappNumber &&
-      !contactNumberRegex.test(formData.whatsappNumber)
-    ) {
-      newErrors.whatsappNumber = "WhatsApp Number must be exactly 10 digits.";
-      formValid = false;
-    }
+    // if (
+    //   formData.whatsappNumber &&
+    //   !contactNumberRegex.test(formData.whatsappNumber)
+    // ) {
+    //   newErrors.whatsappNumber = "WhatsApp Number must be exactly 10 digits.";
+    //   formValid = false;
+    // }
 
     const requiredFields = [
       "callDate",
@@ -490,7 +490,6 @@ const EditCallDetails = () => {
               className="form-input"
               dateFormat="yyyy-MM-dd"
               isClearable
-              maxDate={new Date()}
             />
             {errors.callDate && <p className="form-error">{errors.callDate}</p>}
           </div>

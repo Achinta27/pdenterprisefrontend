@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { useDebounce } from "use-debounce";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { BiSolidDuplicate } from "react-icons/bi";
+import Select from "react-select";
 
 const ManageCallDetails = () => {
   const [callDetails, setCallDetails] = useState([]);
@@ -48,8 +49,8 @@ const ManageCallDetails = () => {
   });
 
   const [selectedBrand, setSelectedBrand] = useState("");
-  const [selectedJobStatus, setSelectedJobStatus] = useState("");
-  const [selectedEngineer, setSelectedEngineer] = useState("");
+  const [selectedJobStatus, setSelectedJobStatus] = useState([]);
+  const [selectedEngineer, setSelectedEngineer] = useState([]);
   const [selectedWarrantyTerm, setSelectedWarrantyTerm] = useState("");
   const [selectedServiceType, setSelectedServiceType] = useState("");
   const [mobileNumberFilter, setMobileNumberFilter] = useState("");
@@ -177,8 +178,14 @@ const ManageCallDetails = () => {
       page,
       limit: callDetailsPerPage,
       brand: debouncedBrand || undefined,
-      jobStatus: debouncedJobStatus || undefined,
-      engineer: debouncedEngineer || undefined,
+      jobStatus:
+        debouncedJobStatus && debouncedJobStatus.length > 0
+          ? debouncedJobStatus.join(",")
+          : undefined,
+      engineer:
+        debouncedEngineer && debouncedEngineer.length > 0
+          ? debouncedEngineer.join(",")
+          : undefined,
       warrantyTerms: debouncedWarrantyTerm || undefined,
       serviceType: debouncedServiceType || undefined,
       number: debouncedSearchFilter || undefined,
@@ -271,14 +278,33 @@ const ManageCallDetails = () => {
     fetchCallDetailsData(1);
   };
 
-  const handleJobStatusChange = (event) => {
-    setSelectedJobStatus(event.target.value);
+  const jobStatusOptions = filterOptions.jobStatuss.map((status) => ({
+    value: status,
+    label: status,
+  }));
+
+  const handleJobStatusChange = (selectedOptions) => {
+    const values = selectedOptions
+      ? selectedOptions.map((opt) => opt.value)
+      : [];
+
+    setSelectedJobStatus(values);
     setCurrentPage(1);
     fetchCallDetailsData(1);
   };
 
-  const handleEngineerChange = (event) => {
-    setSelectedEngineer(event.target.value);
+  const engineerOptions = filterOptions.engineers.map((engineer) => ({
+    value: engineer._id,
+    label: engineer.engineername,
+  }));
+
+  const handleEngineerChange = (selectedOptions) => {
+    // selectedOptions = array of { value, label } OR null
+    const values = selectedOptions
+      ? selectedOptions.map((opt) => opt.value)
+      : [];
+
+    setSelectedEngineer(values);
     setCurrentPage(1);
     fetchCallDetailsData(1);
   };
@@ -934,7 +960,7 @@ const ManageCallDetails = () => {
                 type="text"
                 readOnly
                 value={`From: ${dateRange[0].startDate.toLocaleDateString()} To: ${dateRange[0].endDate.toLocaleDateString()}`}
-                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC] h-[2.5rem]"
                 onClick={() => setShowDatePicker(!showDatePicker)}
               />
 
@@ -987,7 +1013,7 @@ const ManageCallDetails = () => {
                 type="text"
                 readOnly
                 value={`From: ${gdDateRange[0].startDate.toLocaleDateString()} To: ${gdDateRange[0].endDate.toLocaleDateString()}`}
-                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC] h-[2.5rem]"
                 onClick={() => setShowGdDatePicker(!showGdDatePicker)}
               />
 
@@ -1040,7 +1066,7 @@ const ManageCallDetails = () => {
                 type="text"
                 readOnly
                 value={`From: ${visitDateRange[0].startDate.toLocaleDateString()} To: ${visitDateRange[0].endDate.toLocaleDateString()}`}
-                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC]"
+                className="md:px-2 md:py-1 sm:p-1 flex justify-center items-center text-sm rounded-lg border border-[#CCCCCC] h-[2.5rem]"
                 onClick={() => setShowVisitDatePicker(!showVisitDatePicker)}
               />
 
@@ -1092,47 +1118,44 @@ const ManageCallDetails = () => {
               placeholder="Search using number"
               value={searchFilter}
               onChange={handleSearchChange}
-              className="px-4 p-1 border !shadow-custom border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border !shadow-custom border-[#cccccc] text-sm rounded-md h-[2.5rem]"
             />
           </div>
 
           <div>
-            <select
+            <Select
+              isMulti
               name="status"
-              value={selectedJobStatus}
+              placeholder="By Status"
+              options={jobStatusOptions}
+              value={jobStatusOptions.filter((opt) =>
+                selectedJobStatus.includes(opt.value)
+              )}
               onChange={handleJobStatusChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
-            >
-              <option value="">By Status</option>
-              {filterOptions.jobStatuss.map((jobStatus, index) => (
-                <option key={index} value={jobStatus}>
-                  {jobStatus}
-                </option>
-              ))}
-            </select>
+              className="min-w-[15rem] !shadow-custom  text-sm rounded-md h-[2.5rem]"
+            />
           </div>
 
           <div>
-            <select
+            <Select
+              isMulti
               name="engineer"
-              value={selectedEngineer}
+              placeholder="By Engineer"
+              options={engineerOptions}
+              value={engineerOptions.filter((opt) =>
+                selectedEngineer.includes(opt.value)
+              )}
               onChange={handleEngineerChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
-            >
-              <option value="">By Engineer</option>
-              {filterOptions.engineers.map((engineer, index) => (
-                <option key={index} value={engineer._id}>
-                  {engineer.engineername}
-                </option>
-              ))}
-            </select>
+              className="min-w-[15rem] !shadow-custom  text-sm rounded-md h-[2.5rem]"
+              classNamePrefix="engineer-select"
+            />
           </div>
           <div>
             <select
               name="teamleader"
               value={selectedTeamleader}
               onChange={handleTeamleaderChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md h-[2.5rem]"
             >
               <option value="">By Teamleader</option>
               {users.map((user, index) => (
@@ -1148,7 +1171,7 @@ const ManageCallDetails = () => {
               name="brand"
               value={selectedBrand}
               onChange={handleBrandChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md h-[2.5rem]"
             >
               <option value="">By Brand</option>
               {filterOptions.brands.map((brand, index) => (
@@ -1164,7 +1187,7 @@ const ManageCallDetails = () => {
               name="warrantyTerms"
               value={selectedWarrantyTerm}
               onChange={handleWarrantyTermChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md h-[2.5rem]"
             >
               <option value="">By Warranty Terms</option>
               {filterOptions.warrantyTerms.map((term, index) => (
@@ -1180,7 +1203,7 @@ const ManageCallDetails = () => {
               name="serviceType"
               value={selectedServiceType}
               onChange={handleServiceTypeChange}
-              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md"
+              className="px-4 p-1 border border-[#cccccc] text-sm rounded-md h-[2.5rem]"
             >
               <option value="">By Service Type</option>
               {filterOptions.serviceTypes.map((type, index) => (

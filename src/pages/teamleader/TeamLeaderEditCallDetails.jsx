@@ -156,13 +156,13 @@ const TeamLeaderEditCallDetails = () => {
     }
 
     // Validate WhatsApp number (optional, but if filled, must be exactly 10 digits)
-    if (
-      formData.whatsappNumber &&
-      !contactNumberRegex.test(formData.whatsappNumber)
-    ) {
-      newErrors.whatsappNumber = "WhatsApp Number must be exactly 10 digits.";
-      formValid = false;
-    }
+    // if (
+    //   formData.whatsappNumber &&
+    //   !contactNumberRegex.test(formData.whatsappNumber)
+    // ) {
+    //   newErrors.whatsappNumber = "WhatsApp Number must be exactly 10 digits.";
+    //   formValid = false;
+    // }
 
     const requiredFields = [
       "callDate",
