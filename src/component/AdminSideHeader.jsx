@@ -73,6 +73,11 @@ const AdminSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
         },
       ],
     },
+    {
+      icon: "/images/solution.svg",
+      name: "Smart Solution",
+      link: "/admin/manage-additional-call",
+    },
   ];
 
   const handleIconClick = (index) => {

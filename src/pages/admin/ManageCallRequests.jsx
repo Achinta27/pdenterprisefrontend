@@ -6,7 +6,7 @@ import { DateRangePicker } from "react-date-range";
 import LoadingAnimation from "../../component/LoadingAnimation";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TiCancel } from "react-icons/ti";
 
 export default function ManageCallRequests() {
@@ -29,11 +29,13 @@ export default function ManageCallRequests() {
 
   const [callRequests, setCallRequests] = useState([]);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/callrequests/filter/get`
+          `${import.meta.env.VITE_BASE_URL}/api/callrequests/filter/get`,
         );
         setFilterOptions({
           serviceTypes: response.data.call_request_services,
@@ -98,7 +100,7 @@ export default function ManageCallRequests() {
           : ""
       }&end_date=${
         appliedDateRange ? appliedDateRange[0].endDate.toLocaleDateString() : ""
-      }`
+      }`,
     );
 
     setCallRequests(response.data.callRequests);
@@ -117,7 +119,7 @@ export default function ManageCallRequests() {
     }
     try {
       const response = await axios.delete(
-        `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`
+        `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`,
       );
 
       if (response.status === 200) {
@@ -172,7 +174,7 @@ export default function ManageCallRequests() {
             } rounded`}
           >
             {i}
-          </button>
+          </button>,
         );
       }
     }
@@ -201,7 +203,7 @@ export default function ManageCallRequests() {
         `${import.meta.env.VITE_BASE_URL}/api/callrequests/${id}`,
         {
           call_status: "Rejected",
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -211,6 +213,42 @@ export default function ManageCallRequests() {
     } catch (error) {
       console.log(error);
       alert("Error update Call Request");
+    }
+  }
+
+  async function addAdditionalCallRequest(callRequest) {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/additionalcall`,
+        {
+          requested_date: callRequest.createdAt,
+          service_type: callRequest.request_type,
+          additional_service_type: callRequest.call_service
+            .replaceAll(" ", "_")
+            .replaceAll("&", "and")
+            .toLowerCase(),
+          visit_date: callRequest.preferred_visit_date,
+          customer: callRequest.customer?._id,
+          remarks: callRequest.remarks,
+        },
+      );
+      if (response.status !== 201) {
+        throw new Error("Error adding Call Request");
+      }
+      await axios.put(
+        `${import.meta.env.VITE_BASE_URL}/api/callrequests/${callRequest._id}`,
+        {
+          call_status: "Accepted",
+        },
+      );
+      navigate("/admin/manage-additional-call");
+    } catch (error) {
+      console.log(error);
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Error adding Call Request",
+      );
     }
   }
 
@@ -337,8 +375,8 @@ export default function ManageCallRequests() {
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.customer.area}
                     </div>
-                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.call_service}
+                    <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit capitalize">
+                      {detail.call_service.replace(/_/g, " ")}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
                       {detail.remarks}
@@ -364,7 +402,8 @@ export default function ManageCallRequests() {
                           <TiCancel />
                         </button>
                       )}
-                      {detail.call_status === "Pending" && (
+                      {detail.call_status === "Pending" &&
+                      detail.request_type === "repair_services" ? (
                         <Link
                           className="text-yellow-500 group-hover:text-yellow-300"
                           to={`/admin/add-calldetails?request=${detail._id}`}
@@ -372,6 +411,14 @@ export default function ManageCallRequests() {
                         >
                           <FiEdit />
                         </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => addAdditionalCallRequest(detail)}
+                          className="text-yellow-500 group-hover:text-yellow-300"
+                        >
+                          <FiEdit />
+                        </button>
                       )}
                       <button
                         className="text-[#D53F3A] group-hover:text-red-200"

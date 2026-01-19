@@ -1,15 +1,26 @@
 import React, { useState } from "react";
 import AdminLogin from "../component/AdminLogin";
 import EmployeeLogin from "../component/EmployeeLogin";
+import AdminLoginWithOTP from "../component/AdminLoginWithOTP";
+import TeamLeaderLoginWithOTP from "../component/teamleader/TeamLeaderLoginWithOTP ";
 
 const LoginPage = () => {
   const [selectedRole, setSelectedRole] = useState("admin");
+  const [loginMethod, setLoginMethod] = useState("password");
 
   const renderLoginForm = () => {
     if (selectedRole === "admin") {
-      return <AdminLogin />;
+      return loginMethod === "password" ? (
+        <AdminLogin />
+      ) : (
+        <AdminLoginWithOTP />
+      );
     }
-    return <EmployeeLogin />;
+    return loginMethod === "password" ? (
+      <EmployeeLogin />
+    ) : (
+      <TeamLeaderLoginWithOTP />
+    );
   };
 
   return (
@@ -47,6 +58,28 @@ const LoginPage = () => {
             </button>
           </div>
           <div className="mt-4">{renderLoginForm()}</div>
+          <div className="mt-6 bg-white rounded-lg shadow-sm p-1 flex space-x-1">
+            <button
+              onClick={() => setLoginMethod("password")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                loginMethod === "password"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Password Login
+            </button>
+            <button
+              onClick={() => setLoginMethod("otp")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                loginMethod === "otp"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              OTP Login
+            </button>
+          </div>
         </div>
       </div>
     </div>

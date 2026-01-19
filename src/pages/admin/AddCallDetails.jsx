@@ -60,7 +60,10 @@ const AddCallDetails = () => {
         setFormData((prev) => ({
           ...prev,
           customerName: data.customer.name,
-          productsName: data.call_service,
+          productsName:
+            products.find((prod) =>
+              prod.productname.includes(data.call_service.toLowerCase())
+            ) || data.call_service,
           visitdate: new Date(data.preferred_visit_date),
           contactNumber: data.customer.mobile_number,
           address: data.customer.address,

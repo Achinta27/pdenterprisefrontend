@@ -23,6 +23,7 @@ import ManageCallRequests from "./pages/admin/ManageCallRequests";
 import TeamLeaderCallRequests from "./pages/teamleader/TeamLeaderCallRequests";
 import ManageCustomer from "./pages/admin/ManageCustomer";
 import AppBanner from "./pages/admin/AppBanner";
+import ManageAdditionalCall from "./pages/admin/ManageAdditionalCall";
 
 const ProtectedRoute = ({ allowedRole }) => {
   const { user } = useContext(AuthContext);
@@ -91,6 +92,10 @@ function App() {
         <Route path="/admin/call-requests" element={<ManageCallRequests />} />
         <Route path="/admin/customer-management" element={<ManageCustomer />} />
         <Route path="/admin/customer-banner" element={<AppBanner />} />
+        <Route
+          path="/admin/manage-additional-call"
+          element={<ManageAdditionalCall />}
+        />
       </Route>
 
       {/* teamleader */}

@@ -737,6 +737,10 @@ const ManageCallDetails = () => {
     if (key.toLowerCase().includes("engineer")) {
       return value.engineername;
     }
+    if (key.toLowerCase().includes("check_in_location")) {
+      const returnAble = JSON.parse(value);
+      return `https://maps.google.com/?q=${returnAble.latitude},${returnAble.longitude}`;
+    }
     return value;
   };
 
@@ -778,6 +782,7 @@ const ManageCallDetails = () => {
     "totalAmount",
     "commissioniw",
     "partamount",
+    "check_in_location",
   ];
 
   const handleDuplicateFound = (duplicates) => {
@@ -1352,8 +1357,22 @@ const ManageCallDetails = () => {
               <div className="flex flex-col gap-2">
                 {fieldsToDisplay.map((key) => (
                   <p key={key}>
-                    <strong>{formatKey(key)}:</strong>{" "}
-                    {formatValue(key, selectedCallDetail[key])}
+                    <strong>{formatKey(key).replaceAll("_", " ")}:</strong>{" "}
+                    {typeof formatValue(key, selectedCallDetail[key]) ===
+                      "string" &&
+                    formatValue(key, selectedCallDetail[key]).startsWith(
+                      "https"
+                    ) ? (
+                      <Link
+                        to={formatValue(key, selectedCallDetail[key])}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {formatValue(key, selectedCallDetail[key])}
+                      </Link>
+                    ) : (
+                      formatValue(key, selectedCallDetail[key])
+                    )}
                   </p>
                 ))}
               </div>
