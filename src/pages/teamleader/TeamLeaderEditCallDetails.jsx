@@ -123,7 +123,7 @@ const TeamLeaderEditCallDetails = () => {
         productsName: callDetail.productsName,
         warrantyTerms: callDetail.warrantyTerms,
         TAT: callDetail.TAT,
-        serviceType: callDetail.serviceType,
+        serviceType: callDetail.serviceType?.servicetype || callDetail.serviceType || "",
         remarks: callDetail.remarks,
         parts: callDetail.parts,
         jobStatus: callDetail.jobStatus,
@@ -194,48 +194,68 @@ const TeamLeaderEditCallDetails = () => {
       return;
     }
 
-    const formdata = new FormData();
+    const changedByInfo = {
+      name: localStorage.getItem("name") || "TeamLeader",
+      role: "teamleader",
+      userId: localStorage.getItem("userId") || null,
+    };
 
-    if (serviceImages.length <= 0) {
-      formdata.append("service_images", JSON.stringify([]));
-    } else {
-      serviceImages.forEach((image) => {
-        if (!image.hasOwnProperty("public_id")) {
-          formdata.append("service_images", image);
-        }
-      });
-
-      const channgedPicture = serviceImages.filter((img) =>
-        img.hasOwnProperty("public_id")
-      );
-
-      if (channgedPicture?.length > 0) {
-        formdata.append(
-          "service_images",
-          JSON.stringify(channgedPicture ?? [])
-        );
-      }
-    }
+    const hasNewFiles = serviceImages.some(
+      (img) => !img.hasOwnProperty("public_id") && img instanceof File
+    );
 
     try {
-      const response = await axios.put(
-        `${
-          import.meta.env.VITE_BASE_URL
-        }/api/calldetails/update/${calldetailsId}`,
-        formData
-      );
+      let response;
 
-      await axios.put(
-        `${
-          import.meta.env.VITE_BASE_URL
-        }/api/calldetails/update/${calldetailsId}`,
-        formdata,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      if (hasNewFiles) {
+        const formdata = new FormData();
+
+        for (const [key, value] of Object.entries(formData)) {
+          if (value !== null && value !== undefined) {
+            formdata.append(key, value);
+          }
         }
-      );
+
+        serviceImages.forEach((img) => {
+          if (!img.hasOwnProperty("public_id")) {
+            formdata.append("service_images", img);
+          }
+        });
+
+        const existingImages = serviceImages.filter((img) =>
+          img.hasOwnProperty("public_id")
+        );
+        if (existingImages.length > 0) {
+          formdata.append("service_images", JSON.stringify(existingImages));
+        } else {
+          formdata.append("service_images", JSON.stringify([]));
+        }
+
+        formdata.append("changedBy", JSON.stringify(changedByInfo));
+
+        response = await axios.put(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/calldetails/update/${calldetailsId}`,
+          formdata,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+      } else {
+        response = await axios.put(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/calldetails/update/${calldetailsId}`,
+          {
+            ...formData,
+            service_images: serviceImages,
+            changedBy: changedByInfo,
+          }
+        );
+      }
 
       if (response.status === 200) {
         if (formData.jobStatus === "Engineer Assigned") {

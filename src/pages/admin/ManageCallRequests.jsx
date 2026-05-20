@@ -91,20 +91,27 @@ export default function ManageCallRequests() {
   };
 
   const fetchCallRequests = useCallback(async () => {
-    const response = await axios.get(
-      `${
-        import.meta.env.VITE_BASE_URL
-      }/api/callrequests/?call_status=${selectedRequestStatus}&call_service=${selectedServiceType}&page=${currentPage}&start_date=${
-        appliedDateRange
-          ? appliedDateRange[0].startDate.toLocaleDateString()
-          : ""
-      }&end_date=${
-        appliedDateRange ? appliedDateRange[0].endDate.toLocaleDateString() : ""
-      }`,
-    );
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/api/callrequests/?call_status=${selectedRequestStatus}&call_service=${selectedServiceType}&page=${currentPage}&start_date=${
+          appliedDateRange
+            ? appliedDateRange[0].startDate.toLocaleDateString()
+            : ""
+        }&end_date=${
+          appliedDateRange ? appliedDateRange[0].endDate.toLocaleDateString() : ""
+        }`,
+      );
 
-    setCallRequests(response.data.callRequests);
-    setTotalPages(response.data.totalPages);
+      setCallRequests(response.data.callRequests);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching call requests:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [
     selectedRequestStatus,
     selectedServiceType,
@@ -367,13 +374,13 @@ export default function ManageCallRequests() {
                     key={detail.callrequestId}
                   >
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.customer.name}
+                      {detail.customer?.name}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.customer.mobile_number}
+                      {detail.customer?.mobile_number}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {detail.customer.area}
+                      {detail.customer?.area}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit capitalize">
                       {detail.call_service.replace(/_/g, " ")}

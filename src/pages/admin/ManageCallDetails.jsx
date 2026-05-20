@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { FiEye, FiEdit } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
@@ -9,6 +9,7 @@ import DuplicatePopup from "../../component/DuplicatePopup";
 import LoadingAnimation from "../../component/LoadingAnimation";
 import ExcelExport from "../../component/ExcelExport";
 import { DateRangePicker } from "react-date-range";
+import HistoryTimeline from "../../component/HistoryTimeline";
 
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
@@ -46,14 +47,16 @@ const ManageCallDetails = () => {
     warrantyTerms: [],
     serviceTypes: [],
     jobStatuss: [],
+    dealers: [],
   });
 
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedJobStatus, setSelectedJobStatus] = useState([]);
   const [selectedEngineer, setSelectedEngineer] = useState([]);
+  const [selectedDealer, setSelectedDealer] = useState([]);
   const [selectedWarrantyTerm, setSelectedWarrantyTerm] = useState("");
   const [selectedServiceType, setSelectedServiceType] = useState("");
-  const [mobileNumberFilter, setMobileNumberFilter] = useState("");
+  const [mobileNumberFilter] = useState("");
   const [showDateFilterButtons, setShowDateFilterButtons] = useState(false);
   const [appliedDateRange, setAppliedDateRange] = useState(null);
   const [searchFilter, setSearchFilter] = useState("");
@@ -75,6 +78,7 @@ const ManageCallDetails = () => {
   const [debouncedBrand] = useDebounce(selectedBrand, 300);
   const [debouncedJobStatus] = useDebounce(selectedJobStatus, 300);
   const [debouncedEngineer] = useDebounce(selectedEngineer, 300);
+  const [debouncedDealer] = useDebounce(selectedDealer, 300);
   const [debouncedTeamleader] = useDebounce(selectedTeamleader, 300);
   const [debouncedWarrantyTerm] = useDebounce(selectedWarrantyTerm, 300);
   const [debouncedServiceType] = useDebounce(selectedServiceType, 300);
@@ -129,6 +133,7 @@ const ManageCallDetails = () => {
     debouncedBrand,
     debouncedJobStatus,
     debouncedEngineer,
+    debouncedDealer,
     debouncedWarrantyTerm,
     debouncedServiceType,
     debouncedSearchFilter,
@@ -195,6 +200,10 @@ const ManageCallDetails = () => {
       notClose: jobStatusFilter === "Not Close" ? true : undefined,
       followup: followupfilter === "FollowUp" ? true : undefined,
       teamleaderId: debouncedTeamleader || undefined,
+      dealerId:
+        debouncedDealer && debouncedDealer.length > 0
+          ? debouncedDealer.join(",")
+          : undefined,
 
       startDate,
       endDate,
@@ -207,7 +216,7 @@ const ManageCallDetails = () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/get?sortBy=gddate`,
-        { params, cancelToken: cancelToken.token }
+        { params, cancelToken: cancelToken.token },
       );
 
       setCallDetails(response.data.data);
@@ -264,7 +273,7 @@ const ManageCallDetails = () => {
   const fetchUsers = async () => {
     try {
       const teamLeaderResponse = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/teamleader`
+        `${import.meta.env.VITE_BASE_URL}/api/teamleader`,
       );
       setUsers(teamLeaderResponse.data);
     } catch (error) {
@@ -298,6 +307,11 @@ const ManageCallDetails = () => {
     label: engineer.engineername,
   }));
 
+  const dealerOptions = filterOptions.dealers.map((dealer) => ({
+    value: dealer._id,
+    label: dealer.name,
+  }));
+
   const handleEngineerChange = (selectedOptions) => {
     // selectedOptions = array of { value, label } OR null
     const values = selectedOptions
@@ -305,6 +319,15 @@ const ManageCallDetails = () => {
       : [];
 
     setSelectedEngineer(values);
+    setCurrentPage(1);
+    fetchCallDetailsData(1);
+  };
+
+  const handleDealerChange = (selectedOptions) => {
+    const values = selectedOptions
+      ? selectedOptions.map((opt) => opt.value)
+      : [];
+    setSelectedDealer(values);
     setCurrentPage(1);
     fetchCallDetailsData(1);
   };
@@ -325,18 +348,6 @@ const ManageCallDetails = () => {
     setSelectedServiceType(event.target.value);
     setCurrentPage(1);
     fetchCallDetailsData(1);
-  };
-
-  const handleMobileNumberChange = (event) => {
-    const value = event.target.value;
-    setMobileNumberFilter(value);
-
-    if (value === "") {
-      setCurrentPage(1);
-      fetchCallDetailsData(1);
-    } else {
-      setCurrentPage(1);
-    }
   };
 
   const handleDateChange = (ranges) => {
@@ -537,6 +548,7 @@ const ManageCallDetails = () => {
   }, []);
 
   const [hasCallRequest, setHasCallRequest] = useState(false);
+  const [hasDealerCallRequest, setHasDealerCallRequest] = useState(false);
 
   useEffect(() => {
     async function getRequestStatus() {
@@ -544,7 +556,7 @@ const ManageCallDetails = () => {
         const response = await axios.get(
           `${
             import.meta.env.VITE_BASE_URL
-          }/api/callrequests?call_status=Pending`
+          }/api/callrequests?call_status=Pending`,
         );
 
         if (response.data.totalCallRequests > 0) {
@@ -562,10 +574,34 @@ const ManageCallDetails = () => {
     getRequestStatus();
   }, []);
 
+  useEffect(() => {
+    async function getDealerRequestStatus() {
+      try {
+        const response = await axios.get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/dealercall/get-all?status=pending&limit=1`,
+        );
+
+        if (response.data.total > 0) {
+          setHasDealerCallRequest(true);
+          return;
+        }
+
+        setHasDealerCallRequest(false);
+      } catch (error) {
+        console.error("Error fetching dealer call requests:", error);
+        setHasDealerCallRequest(false);
+      }
+    }
+
+    getDealerRequestStatus();
+  }, []);
+
   const fetchFilterOptions = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/calldetails/filters`
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/filters`,
       );
       setFilterOptions(response.data);
     } catch (error) {
@@ -591,19 +627,13 @@ const ManageCallDetails = () => {
 
   const handleFollowUpClick = () => {
     setFollowupfilter((prevStatus) =>
-      prevStatus === "FollowUp" ? null : "FollowUp"
+      prevStatus === "FollowUp" ? null : "FollowUp",
     );
-
-    const followupfilter = followup.filter(
-      (followup) => followup.followupdate !== null
-    );
-    setFollowupfilter(followupfilter);
-
     setCurrentPage(1);
   };
   const handleNotCloseClick = () => {
     setJobStatusFilter((prevStatus) =>
-      prevStatus === "Not Close" ? null : "Not Close"
+      prevStatus === "Not Close" ? null : "Not Close",
     );
     setCurrentPage(1);
   };
@@ -612,8 +642,15 @@ const ManageCallDetails = () => {
     navigate(`/admin/call-details/part2/${calldetailsId}`);
   };
 
-  const handleViewClick = (callDetail) => {
-    setSelectedCallDetail(callDetail);
+  const handleViewClick = async (callDetail) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/get/${callDetail.calldetailsId || callDetail._id}`
+      );
+      setSelectedCallDetail(response.data.data);
+    } catch (error) {
+      setSelectedCallDetail(callDetail);
+    }
     setShowModal(true);
   };
 
@@ -638,13 +675,13 @@ const ManageCallDetails = () => {
       await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/delete/${
           callDetailToDelete.calldetailsId
-        }`
+        }`,
       );
 
       setCallDetails((prevDetails) =>
         prevDetails.filter(
-          (detail) => detail.calldetailsId !== callDetailToDelete.calldetailsId
-        )
+          (detail) => detail.calldetailsId !== callDetailToDelete.calldetailsId,
+        ),
       );
       setShowDeletePopup(false);
       setCallDetailToDelete(null);
@@ -687,7 +724,7 @@ const ManageCallDetails = () => {
             } rounded`}
           >
             {i}
-          </button>
+          </button>,
         );
       }
     }
@@ -708,7 +745,7 @@ const ManageCallDetails = () => {
     { name: "Call No" },
     { name: "Brand", column: "brandName" },
     { name: "GD Date" },
-    { name: "FollowUp Date" },
+    { name: "Dealer" },
     { name: "Part II" },
     { name: "Action" },
   ];
@@ -736,6 +773,9 @@ const ManageCallDetails = () => {
     }
     if (key.toLowerCase().includes("engineer")) {
       return value.engineername;
+    }
+    if (key.toLowerCase().includes("dealer")) {
+      return value.name;
     }
     if (key.toLowerCase().includes("check_in_location")) {
       const returnAble = JSON.parse(value);
@@ -765,7 +805,7 @@ const ManageCallDetails = () => {
     "closerCode",
     "dateofPurchase",
     "oduser",
-    "followupdate",
+    "dealer",
     "gddate",
 
     "serviceType",
@@ -822,7 +862,7 @@ const ManageCallDetails = () => {
     "closerCode",
     "dateofPurchase",
     "oduser",
-    "followupdate",
+    "dealer",
     "gddate",
     "receivefromEngineer",
     "amountReceived",
@@ -858,8 +898,8 @@ const ManageCallDetails = () => {
               isEngineerFilterActive
                 ? "bg-blue-500 text-white"
                 : noEngineerCount > 0
-                ? "animate-blink"
-                : ""
+                  ? "animate-blink"
+                  : ""
             }`}
           >
             Engineer Not Assigned
@@ -902,6 +942,7 @@ const ManageCallDetails = () => {
               brand: selectedBrand,
               jobStatus: jobStatusFilter || selectedJobStatus,
               engineer: selectedEngineer,
+              dealerId: selectedDealer,
               warrantyTerms: selectedWarrantyTerm,
               serviceType: selectedServiceType,
               mobileNumber: mobileNumberFilter,
@@ -941,8 +982,8 @@ const ManageCallDetails = () => {
               amountMissmatchedFilterActive
                 ? "bg-blue-500 text-white"
                 : amountMissmatchedCount > 0
-                ? "animate-blink "
-                : ""
+                  ? "animate-blink "
+                  : ""
             }`}
           >
             Amount Missmatched
@@ -954,6 +995,14 @@ const ManageCallDetails = () => {
             }`}
           >
             Customer Call Request
+          </Link>
+          <Link
+            to={`/admin/dealer-calls`}
+            className={`text-black w-fit bg-[#EEEEEE] flex justify-center items-center text-sm font-medium px-4 py-1 rounded-md shadow-custom ${
+              hasDealerCallRequest ? "animate-blink" : ""
+            }`}
+          >
+            Dealer Call Request
           </Link>
         </div>
 
@@ -1134,7 +1183,7 @@ const ManageCallDetails = () => {
               placeholder="By Status"
               options={jobStatusOptions}
               value={jobStatusOptions.filter((opt) =>
-                selectedJobStatus.includes(opt.value)
+                selectedJobStatus.includes(opt.value),
               )}
               onChange={handleJobStatusChange}
               className="min-w-[15rem] !shadow-custom  text-sm rounded-md h-[2.5rem]"
@@ -1148,7 +1197,7 @@ const ManageCallDetails = () => {
               placeholder="By Engineer"
               options={engineerOptions}
               value={engineerOptions.filter((opt) =>
-                selectedEngineer.includes(opt.value)
+                selectedEngineer.includes(opt.value),
               )}
               onChange={handleEngineerChange}
               className="min-w-[15rem] !shadow-custom  text-sm rounded-md h-[2.5rem]"
@@ -1169,6 +1218,21 @@ const ManageCallDetails = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <Select
+              isMulti
+              name="dealer"
+              placeholder="By Dealer"
+              options={dealerOptions}
+              value={dealerOptions.filter((opt) =>
+                selectedDealer.includes(opt.value),
+              )}
+              onChange={handleDealerChange}
+              className="min-w-[15rem] !shadow-custom text-sm rounded-md h-[2.5rem]"
+              classNamePrefix="dealer-select"
+            />
           </div>
 
           <div>
@@ -1264,7 +1328,9 @@ const ManageCallDetails = () => {
                       {formatDate(detail.gddate)}
                     </div>
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 twolinelimit">
-                      {formatDate(detail.followupdate)}
+                      {detail.dealer?.name
+                        ? `${detail.dealer.name} (${detail.dealer.dealerCode || detail.dealer.dealerId})`
+                        : "N/A"}
                     </div>
 
                     <div className="xlg:text-sm sm:text-xs font-semibold flex-1 ">
@@ -1361,7 +1427,7 @@ const ManageCallDetails = () => {
                     {typeof formatValue(key, selectedCallDetail[key]) ===
                       "string" &&
                     formatValue(key, selectedCallDetail[key]).startsWith(
-                      "https"
+                      "https",
                     ) ? (
                       <Link
                         to={formatValue(key, selectedCallDetail[key])}
@@ -1376,6 +1442,7 @@ const ManageCallDetails = () => {
                   </p>
                 ))}
               </div>
+              <HistoryTimeline history={selectedCallDetail.history} />
             </div>
           </div>
         )}

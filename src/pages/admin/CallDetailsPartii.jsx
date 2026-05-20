@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { AuthContext } from "../../context/AuthContext";
 
 const CallDetailsPartii = () => {
   const { calldetailsId } = useParams();
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     receivefromEngineer: null,
     amountReceived: "",
@@ -100,7 +102,7 @@ const CallDetailsPartii = () => {
       );
       const result = new Function(`return ${sanitizedExpression}`)();
       return result;
-    } catch (error) {
+    } catch {
       setMessage("Invalid expression");
       return expression;
     }
@@ -214,7 +216,14 @@ const CallDetailsPartii = () => {
         `${
           import.meta.env.VITE_BASE_URL
         }/api/calldetails/part2/${calldetailsId}`,
-        formData
+        {
+          ...formData,
+          changedBy: {
+            name: user?.name || localStorage.getItem("name") || "Admin",
+            role: user?.role || localStorage.getItem("role") || "admin",
+            userId: user?._id || user?.id || null,
+          },
+        }
       );
 
       if (response.status === 200) {

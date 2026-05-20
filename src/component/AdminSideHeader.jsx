@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
 const AdminSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
@@ -77,6 +77,14 @@ const AdminSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
       icon: "/images/solution.svg",
       name: "Smart Solution",
       link: "/admin/manage-additional-call",
+    },
+    {
+      icon: "/images/user.svg",
+      name: "Dealer Management",
+      links: [
+        { name: "Manage Dealers", link: "/admin/dealers" },
+        { name: "Dealer Calls", link: "/admin/dealer-calls" },
+      ],
     },
   ];
 

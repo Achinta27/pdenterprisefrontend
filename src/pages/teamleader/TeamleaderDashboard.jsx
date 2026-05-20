@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { FiEye, FiEdit } from "react-icons/fi";
 import { useDebounce } from "use-debounce";
@@ -14,16 +14,14 @@ import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
-import { GrCopy } from "react-icons/gr";
 import { MdFileCopy } from "react-icons/md";
 import ExcelExport from "../../component/ExcelExport";
-import { FaArrowDown, FaArrowUp, FaChevronDown } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { BiSolidDuplicate } from "react-icons/bi";
 import Select from "react-select";
 
 const TeamleaderDashboard = () => {
   const [callDetails, setCallDetails] = useState([]);
-  const [cachedPages, setCachedPages] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCallDetail, setSelectedCallDetail] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -111,7 +109,7 @@ const TeamleaderDashboard = () => {
         const response = await axios.get(
           `${
             import.meta.env.VITE_BASE_URL
-          }/api/callrequests?call_status=Pending`
+          }/api/callrequests?call_status=Pending`,
         );
 
         if (response.data.totalCallRequests > 0) {
@@ -187,7 +185,7 @@ const TeamleaderDashboard = () => {
       page,
       limit: callDetailsPerPage,
       brand: debouncedBrand || undefined,
-        jobStatus:
+      jobStatus:
         debouncedJobStatus && debouncedJobStatus.length > 0
           ? debouncedJobStatus.join(",")
           : undefined,
@@ -213,7 +211,7 @@ const TeamleaderDashboard = () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/get?sortBy=visitdate`,
-        { params, cancelToken: cancelToken.token }
+        { params, cancelToken: cancelToken.token },
       );
 
       setCallDetails(response.data.data);
@@ -281,7 +279,7 @@ const TeamleaderDashboard = () => {
   const fetchFilterOptions = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/calldetails/filters`
+        `${import.meta.env.VITE_BASE_URL}/api/calldetails/filters`,
       );
       setFilterOptions(response.data);
     } catch (error) {
@@ -522,7 +520,7 @@ const TeamleaderDashboard = () => {
           } rounded`}
         >
           {i}
-        </button>
+        </button>,
       );
     }
     return pageNumbers;
@@ -647,20 +645,13 @@ const TeamleaderDashboard = () => {
 
   const handleFollowUpClick = () => {
     setFollowupfilter((prevStatus) =>
-      prevStatus === "FollowUp" ? null : "FollowUp"
+      prevStatus === "FollowUp" ? null : "FollowUp",
     );
-
-    // Filter jobs where followupdate is not null
-    const followupfilter = followup.filter(
-      (followup) => followup.followupdate !== null
-    );
-    setFollowupfilter(followupfilter); // update state with filtered jobs
-
     setCurrentPage(1); // reset to first page if using pagination
   };
   const handleNotCloseClick = () => {
     setJobStatusFilter((prevStatus) =>
-      prevStatus === "Not Close" ? null : "Not Close"
+      prevStatus === "Not Close" ? null : "Not Close",
     );
     setCurrentPage(1);
   };
@@ -694,8 +685,7 @@ const TeamleaderDashboard = () => {
   ];
 
   const handleCopy = (callDetails) => {
-    const calldetailsText = `Customer Name: ${callDetails.customerName}\nContact Number: ${callDetails.contactNumber}\nBrand: ${callDetails.brandName}\nCall Number: ${callDetails.callNumber}\nAddress: ${callDetails.address}\nRoute: ${callDetails.route}
-    \nProduct Name: ${callDetails.productsName}\nWarranty Terms:${callDetails.warrantyTerms}\nService Type:${callDetails.serviceType}`;
+    const calldetailsText = `Customer Name: ${callDetails.customerName}\nContact Number: ${callDetails.contactNumber}\nWhatsapp No: ${callDetails.whatsappNumber}\nBrand: ${callDetails.brandName}\nCall Number: ${callDetails.callNumber}\nAddress: ${callDetails.address}\nRoute: ${callDetails.route}\nProduct Name: ${callDetails.productsName}\nWarranty Terms:${callDetails.warrantyTerms}\nService Type:${callDetails.serviceType?.servicetype || callDetails.serviceType}`;
 
     navigator.clipboard
       .writeText(calldetailsText)
@@ -748,8 +738,8 @@ const TeamleaderDashboard = () => {
               isEngineerFilterActive
                 ? "bg-blue-500 text-white"
                 : noEngineerCount > 0
-                ? "animate-blink"
-                : ""
+                  ? "animate-blink"
+                  : ""
             }`}
           >
             Engineer Not Assigned
@@ -1005,7 +995,7 @@ const TeamleaderDashboard = () => {
               placeholder="By Status"
               options={jobStatusOptions}
               value={jobStatusOptions.filter((opt) =>
-                selectedJobStatus.includes(opt.value)
+                selectedJobStatus.includes(opt.value),
               )}
               onChange={handleJobStatusChange}
               className="min-w-[15rem] !shadow-custom  text-sm rounded-md h-[2.5rem]"
@@ -1019,7 +1009,7 @@ const TeamleaderDashboard = () => {
               placeholder="By Engineer"
               options={engineerOptions}
               value={engineerOptions.filter((opt) =>
-                selectedEngineer.includes(opt.value)
+                selectedEngineer.includes(opt.value),
               )}
               onChange={handleEngineerChange}
               className="min-w-[15rem] !shadow-custom  text-sm rounded-md h-[2.5rem]"
@@ -1133,7 +1123,9 @@ const TeamleaderDashboard = () => {
                       {detail.engineer?.engineername || "Not Assign"}
                     </div>
                     <div className="font-semibold flex-1 break-all">
-                      {detail.serviceType}
+                      {detail.serviceType?.servicetype ||
+                        detail.serviceType ||
+                        "-"}
                     </div>
                     <div className="flex flex-row flex-1 items-center text-base font-semibold gap-5">
                       <button

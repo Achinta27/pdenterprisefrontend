@@ -24,6 +24,11 @@ import TeamLeaderCallRequests from "./pages/teamleader/TeamLeaderCallRequests";
 import ManageCustomer from "./pages/admin/ManageCustomer";
 import AppBanner from "./pages/admin/AppBanner";
 import ManageAdditionalCall from "./pages/admin/ManageAdditionalCall";
+import ManageDealer from "./pages/admin/ManageDealer";
+import AddDealer from "./pages/admin/AddDealer";
+import EditDealer from "./pages/admin/EditDealer";
+import ManageDealerCall from "./pages/admin/ManageDealerCall";
+import DealerCallDetail from "./pages/admin/DealerCallDetail";
 
 const ProtectedRoute = ({ allowedRole }) => {
   const { user } = useContext(AuthContext);
@@ -96,6 +101,11 @@ function App() {
           path="/admin/manage-additional-call"
           element={<ManageAdditionalCall />}
         />
+        <Route path="/admin/dealers" element={<ManageDealer />} />
+        <Route path="/admin/dealers/add" element={<AddDealer />} />
+        <Route path="/admin/dealers/edit/:dealerId" element={<EditDealer />} />
+        <Route path="/admin/dealer-calls" element={<ManageDealerCall />} />
+        <Route path="/admin/dealer-calls/:id" element={<DealerCallDetail />} />
       </Route>
 
       {/* teamleader */}

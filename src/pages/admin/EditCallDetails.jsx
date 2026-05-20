@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
 import { IoClose } from "react-icons/io5";
+import { AuthContext } from "../../context/AuthContext";
+import HistoryTimeline from "../../component/HistoryTimeline";
 
 const EditCallDetails = () => {
   const { calldetailsId } = useParams(); // Get the ID from the URL
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     callDate: null,
     visitdate: null,
@@ -19,6 +22,7 @@ const EditCallDetails = () => {
     contactNumber: "",
     whatsappNumber: "",
     engineer: "",
+    dealer: "",
     productsName: "",
     warrantyTerms: "",
     TAT: "",
@@ -52,11 +56,13 @@ const EditCallDetails = () => {
   const [message, setMessage] = useState("");
   const [brands, setBrands] = useState([]);
   const [engineers, setEngineers] = useState([]);
+  const [dealers, setDealers] = useState([]);
   const [products, setProducts] = useState([]);
   const [warranties, setWarranties] = useState([]);
   const [services, setServices] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
   const [serviceImages, setServiceImages] = useState([]);
+  const [callDetail, setCallDetail] = useState(null);
 
   useEffect(() => {
     fetchDropdownData();
@@ -68,6 +74,7 @@ const EditCallDetails = () => {
       const [
         brandRes,
         engineerRes,
+        dealerRes,
         productRes,
         warrantyRes,
         serviceRes,
@@ -75,6 +82,7 @@ const EditCallDetails = () => {
       ] = await Promise.all([
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/brandsadd/get`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/enginnerdetails/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/dealer/get-all`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/productsadd/get`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/warrantytype/get`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/servicetype/get`),
@@ -83,6 +91,7 @@ const EditCallDetails = () => {
 
       setBrands(brandRes.data);
       setEngineers(engineerRes.data);
+      setDealers(dealerRes.data.dealers || []);
       setProducts(productRes.data);
       setWarranties(warrantyRes.data);
       setServices(serviceRes.data);
@@ -116,6 +125,8 @@ const EditCallDetails = () => {
       );
       const callDetail = response.data.data;
 
+      setCallDetail(callDetail);
+
       setFormData({
         callDate: parseDate(callDetail.callDate),
         visitdate: parseDate(callDetail.visitdate),
@@ -127,10 +138,11 @@ const EditCallDetails = () => {
         contactNumber: callDetail.contactNumber,
         whatsappNumber: callDetail.whatsappNumber,
         engineer: callDetail.engineer ? callDetail.engineer._id : "",
+        dealer: callDetail.dealer ? callDetail.dealer._id : "",
         productsName: callDetail.productsName,
         warrantyTerms: callDetail.warrantyTerms,
         TAT: callDetail.TAT,
-        serviceType: callDetail.serviceType,
+        serviceType: callDetail.serviceType?.servicetype || callDetail.serviceType || "",
         remarks: callDetail.remarks,
         parts: callDetail.parts,
         jobStatus: callDetail.jobStatus,
@@ -162,14 +174,12 @@ const EditCallDetails = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    let formValid = true;
 
     const contactNumberRegex = /^\d{10}$/;
 
     // Validate contact number (must be exactly 10 digits)
     if (!contactNumberRegex.test(formData.contactNumber)) {
       newErrors.contactNumber = "Mobile Number must be exactly 10 digits.";
-      formValid = false;
     }
 
     // Validate WhatsApp number (optional, but if filled, must be exactly 10 digits)
@@ -213,48 +223,71 @@ const EditCallDetails = () => {
       return;
     }
 
-    const formdata = new FormData();
+    const changedByInfo = {
+      name: user?.name || localStorage.getItem("name") || "Admin",
+      role: user?.role || localStorage.getItem("role") || "admin",
+      userId: user?._id || user?.id || null,
+    };
 
-    if (serviceImages.length <= 0) {
-      formdata.append("service_images", JSON.stringify([]));
-    } else {
-      serviceImages.forEach((image) => {
-        if (!image.hasOwnProperty("public_id")) {
-          formdata.append("service_images", image);
-        }
-      });
-
-      const channgedPicture = serviceImages.filter((img) =>
-        img.hasOwnProperty("public_id")
-      );
-
-      if (channgedPicture?.length > 0) {
-        formdata.append(
-          "service_images",
-          JSON.stringify(channgedPicture ?? [])
-        );
-      }
-    }
+    const hasNewFiles = serviceImages.some(
+      (img) => !("public_id" in img) && img instanceof File
+    );
 
     try {
-      const response = await axios.put(
-        `${
-          import.meta.env.VITE_BASE_URL
-        }/api/calldetails/update/${calldetailsId}`,
-        formData
-      );
+      let response;
 
-      await axios.put(
-        `${
-          import.meta.env.VITE_BASE_URL
-        }/api/calldetails/update/${calldetailsId}`,
-        formdata,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      if (hasNewFiles) {
+        const formdata = new FormData();
+
+        for (const [key, value] of Object.entries(formData)) {
+          if (value !== null && value !== undefined) {
+            formdata.append(key, value);
+          }
         }
-      );
+
+        serviceImages.forEach((img) => {
+          if (!("public_id" in img)) {
+            formdata.append("service_images", img);
+          }
+        });
+
+        const existingImages = serviceImages.filter(
+          (img) => "public_id" in img
+        );
+        if (existingImages.length > 0) {
+          formdata.append(
+            "service_images",
+            JSON.stringify(existingImages)
+          );
+        } else {
+          formdata.append("service_images", JSON.stringify([]));
+        }
+
+        formdata.append("changedBy", JSON.stringify(changedByInfo));
+
+        response = await axios.put(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/calldetails/update/${calldetailsId}`,
+          formdata,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+      } else {
+        response = await axios.put(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/calldetails/update/${calldetailsId}`,
+          {
+            ...formData,
+            service_images: serviceImages,
+            changedBy: changedByInfo,
+          }
+        );
+      }
 
       if (response.status === 200) {
         if (formData.jobStatus === "Engineer Assigned") {
@@ -279,8 +312,9 @@ const EditCallDetails = () => {
             console.error("Error sending FCM notification:", error);
           }
         }
-        navigate(`/admin/dashboard`);
+        await fetchCallDetail();
         setMessage("Call Details Updated Successfully");
+        navigate(`/admin/dashboard`);
       } else {
         setMessage("Failed to update call details");
       }
@@ -413,7 +447,7 @@ const EditCallDetails = () => {
       );
       const result = new Function(`return ${sanitizedExpression}`)();
       return result;
-    } catch (error) {
+    } catch {
       setMessage("Invalid expression");
       return expression;
     }
@@ -616,6 +650,23 @@ const EditCallDetails = () => {
               ))}
             </select>
             {errors.engineer && <p className="form-error">{errors.engineer}</p>}
+          </div>
+
+          <div>
+            <label className="form-label">Dealer</label>
+            <select
+              name="dealer"
+              value={formData.dealer}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Dealer</option>
+              {dealers.map((dealer) => (
+                <option key={dealer._id} value={dealer._id}>
+                  {dealer.name} ({dealer.dealerCode})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -1069,6 +1120,7 @@ const EditCallDetails = () => {
             </div>
           </div>
         </form>
+        <HistoryTimeline history={callDetail?.history} />
       </div>
     </AdminDashboardTemplate>
   );
