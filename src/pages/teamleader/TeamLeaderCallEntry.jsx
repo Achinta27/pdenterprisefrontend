@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -18,6 +18,7 @@ const TeamLeaderCallEntry = () => {
     contactNumber: "",
     whatsappNumber: "",
     engineer: "",
+    dealer: "",
     productsName: "",
     warrantyTerms: "",
     TAT: "",
@@ -41,19 +42,57 @@ const TeamLeaderCallEntry = () => {
   const [message, setMessage] = useState("");
   const [brands, setBrands] = useState([]);
   const [engineers, setEngineers] = useState([]);
+  const [dealers, setDealers] = useState([]);
   const [products, setProducts] = useState([]);
   const [warranties, setWarranties] = useState([]);
   const [services, setServices] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
+  const [stickyDealerInfo, setStickyDealerInfo] = useState(null);
+  const dealerAutoFilledRef = useRef(false);
 
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    fetchDropdownData();
+  const fetchDropdownData = useCallback(async () => {
+    try {
+      const [
+        brandRes,
+        engineerRes,
+        dealerRes,
+        productRes,
+        warrantyRes,
+        serviceRes,
+        jobStatusRes,
+      ] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/brandsadd/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/enginnerdetails/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/dealer/get-all`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/productsadd/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/warrantytype/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/servicetype/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/jobstatus/get`),
+      ]);
+
+      setBrands(brandRes.data);
+      setEngineers(engineerRes.data);
+      setDealers(dealerRes.data.dealers || []);
+      setProducts(productRes.data);
+      setWarranties(warrantyRes.data);
+      setServices(serviceRes.data);
+      setJobStatuses(jobStatusRes.data);
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    }
   }, []);
 
   useEffect(() => {
+    fetchDropdownData();
+  }, [fetchDropdownData]);
+
+  useEffect(() => {
     const requestId = searchParams.get("request");
+    const dealerCallId = searchParams.get("dealerCallId");
+    if (!requestId && !dealerCallId) return;
+
     async function fetchRequest() {
       try {
         const { data } = await axios.get(
@@ -62,7 +101,10 @@ const TeamLeaderCallEntry = () => {
         setFormData((prev) => ({
           ...prev,
           customerName: data.customer.name,
-          productsName: data.call_service,
+          productsName:
+            products.find((prod) =>
+              prod.productname.includes(data.call_service.toLowerCase())
+            ) || data.call_service,
           visitdate: new Date(data.preferred_visit_date),
           contactNumber: data.customer.mobile_number,
           address: data.customer.address,
@@ -72,39 +114,35 @@ const TeamLeaderCallEntry = () => {
       }
     }
 
+    async function fetchDealerCall() {
+      try {
+        await fetchDropdownData();
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/dealercall/get/${dealerCallId}`
+        );
+        setFormData((prev) => ({
+          ...prev,
+          dealer: data.dealer?._id || "",
+          customerName: data.customerName,
+          contactNumber: data.contactNumber,
+          address: data.address,
+          route: data.area || "",
+          brandName: data.brand?.brandname || "",
+          productsName: data.product?.productname || "",
+          serviceType: data.serviceType?.servicetype || data.serviceType || "",
+        }));
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     if (requestId) {
       fetchRequest();
     }
-  }, [searchParams]);
-
-  const fetchDropdownData = async () => {
-    try {
-      const [
-        brandRes,
-        engineerRes,
-        productRes,
-        warrantyRes,
-        serviceRes,
-        jobStatusRes,
-      ] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/brandsadd/get`),
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/enginnerdetails/get`),
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/productsadd/get`),
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/warrantytype/get`),
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/servicetype/get`),
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/jobstatus/get`),
-      ]);
-
-      setBrands(brandRes.data);
-      setEngineers(engineerRes.data);
-      setProducts(productRes.data);
-      setWarranties(warrantyRes.data);
-      setServices(serviceRes.data);
-      setJobStatuses(jobStatusRes.data);
-    } catch (error) {
-      console.error("Error fetching dropdown data:", error);
+    if (dealerCallId) {
+      fetchDealerCall();
     }
-  };
+  }, [searchParams, fetchDropdownData, products]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -180,8 +218,14 @@ const TeamLeaderCallEntry = () => {
       return;
     }
 
+    const dealerCallId = searchParams.get("dealerCallId");
+
     try {
-      const formDataWithTeamLeader = { ...formData, teamleaderId };
+      const formDataWithTeamLeader = {
+        ...formData,
+        teamleaderId,
+        ...(dealerCallId && { dealerCallId }),
+      };
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/calldetails/create`,
         formDataWithTeamLeader
@@ -209,6 +253,15 @@ const TeamLeaderCallEntry = () => {
           } catch (error) {
             console.error("Error sending FCM notification:", error);
           }
+        }
+        const requestId = searchParams.get("request");
+        if (requestId) {
+          await axios.put(
+            `${import.meta.env.VITE_BASE_URL}/api/callrequests/${requestId}`,
+            {
+              call_status: "Accepted",
+            }
+          );
         }
         setMessage("Call Details Created Successfully");
         navigate(`/teamleader/dashboard/${teamleaderId}`);
@@ -297,6 +350,36 @@ const TeamLeaderCallEntry = () => {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+
+  const fetchStickyDealer = useCallback(async (customerName, contactNumber) => {
+    if (!customerName && !contactNumber) return;
+    try {
+      const params = {};
+      if (contactNumber) params.contactNumber = contactNumber;
+      if (customerName) params.customerName = customerName;
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/dealercall/find-dealer`,
+        { params }
+      );
+      if (data.dealer) {
+        setStickyDealerInfo(data);
+        if (!formData.dealer && !dealerAutoFilledRef.current) {
+          setFormData((prev) => ({ ...prev, dealer: data.dealer._id }));
+        }
+      } else {
+        setStickyDealerInfo(null);
+      }
+    } catch (error) {
+      console.error("Error fetching sticky dealer:", error);
+    }
+  }, [formData.dealer]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchStickyDealer(formData.customerName, formData.contactNumber);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.customerName, formData.contactNumber, fetchStickyDealer]);
 
   const evaluateExpression = (expression) => {
     try {
@@ -522,6 +605,40 @@ const TeamLeaderCallEntry = () => {
               ))}
             </select>
             {errors.engineer && <p className="form-error">{errors.engineer}</p>}
+          </div>
+
+          <div>
+            <label className="form-label">
+              Dealer
+              {stickyDealerInfo?.dealer && (
+                <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-green-700 bg-green-50 border border-green-200 rounded px-2 py-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+                  Auto-matched ({stickyDealerInfo.matchedBy === "contactNumber" ? "phone" : "name"})
+                </span>
+              )}
+            </label>
+            <select
+              name="dealer"
+              value={formData.dealer}
+              onChange={(e) => {
+                dealerAutoFilledRef.current = true;
+                handleInputChange(e);
+              }}
+              className="form-input"
+            >
+              <option value="">Select Dealer</option>
+              {dealers.map((dealer) => (
+                <option key={dealer._id} value={dealer._id}>
+                  {dealer.name} ({dealer.dealerCode})
+                </option>
+              ))}
+            </select>
+            {stickyDealerInfo?.dealer && (
+              <p className="mt-1 text-xs text-gray-500">
+                Based on {stickyDealerInfo.matchedBy === "contactNumber" ? "contact" : "name"}: &quot;
+                {stickyDealerInfo.customerName}&quot; &middot; {stickyDealerInfo.contactNumber}
+              </p>
+            )}
           </div>
 
           <div>

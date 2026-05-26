@@ -102,6 +102,7 @@ const TeamleaderDashboard = () => {
   const [originalData, setOriginalData] = useState([]);
   const [isSorted, setIsSorted] = useState(false);
   const [hasCallRequest, setHasCallRequest] = useState(false);
+  const [hasDealerCallRequest, setHasDealerCallRequest] = useState(false);
 
   useEffect(() => {
     async function getRequestStatus() {
@@ -125,6 +126,30 @@ const TeamleaderDashboard = () => {
     }
 
     getRequestStatus();
+  }, []);
+
+  useEffect(() => {
+    async function getDealerRequestStatus() {
+      try {
+        const response = await axios.get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/api/dealercall/get-all?status=pending&limit=1`,
+        );
+
+        if (response.data.total > 0) {
+          setHasDealerCallRequest(true);
+          return;
+        }
+
+        setHasDealerCallRequest(false);
+      } catch (error) {
+        console.error("Error fetching dealer call requests:", error);
+        setHasDealerCallRequest(false);
+      }
+    }
+
+    getDealerRequestStatus();
   }, []);
 
   useEffect(() => {
@@ -783,6 +808,14 @@ const TeamleaderDashboard = () => {
             }`}
           >
             Customer Call Request
+          </Link>
+          <Link
+            to={`/admin/dealer-calls`}
+            className={`text-black w-fit bg-[#EEEEEE] flex justify-center items-center text-sm font-medium px-4 py-1 rounded-md shadow-custom ${
+              hasDealerCallRequest ? "animate-blink" : ""
+            }`}
+          >
+            Dealer Call Request
           </Link>
           <ExcelExport
             filters={{

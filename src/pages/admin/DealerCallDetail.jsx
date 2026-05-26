@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import AdminDashboardTemplate from "../../templates/AdminDashboardTemplate";
 import axios from "axios";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import LoadingAnimation from "../../component/LoadingAnimation";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function DealerCallDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [call, setCall] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -182,7 +184,11 @@ export default function DealerCallDetail() {
               <div className="flex gap-4 flex-wrap">
                 {call.status === "pending" && (
                   <Link
-                    to={`/admin/add-calldetails?dealerCallId=${id}`}
+                    to={
+                      user?.role === "TeamLeader"
+                        ? `/teamleader/add-calldetails/${user.teamleaderId || localStorage.getItem("teamleaderId")}?dealerCallId=${id}`
+                        : `/admin/add-calldetails?dealerCallId=${id}`
+                    }
                     className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
                   >
                     Create Call Details

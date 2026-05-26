@@ -30,14 +30,16 @@ import EditDealer from "./pages/admin/EditDealer";
 import ManageDealerCall from "./pages/admin/ManageDealerCall";
 import DealerCallDetail from "./pages/admin/DealerCallDetail";
 
-const ProtectedRoute = ({ allowedRole }) => {
+const ProtectedRoute = ({ allowedRoles }) => {
   const { user } = useContext(AuthContext);
 
   if (!user) {
     return <Navigate to="/" />;
   }
 
-  if (user.role !== allowedRole) {
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+  if (!roles.includes(user.role)) {
     return <Navigate to="/" />;
   }
 
@@ -49,7 +51,8 @@ function App() {
     <Routes>
       <Route path="/" element={<LoginPage />} />
 
-      <Route element={<ProtectedRoute allowedRole="admin" />}>
+      {/* Admin specific routes */}
+      <Route element={<ProtectedRoute allowedRoles="admin" />}>
         <Route path="/admin/dashboard" element={<ManageCallDetails />} />
         <Route path="/admin/add-calldetails" element={<AddCallDetails />} />
         <Route
@@ -97,6 +100,10 @@ function App() {
         <Route path="/admin/call-requests" element={<ManageCallRequests />} />
         <Route path="/admin/customer-management" element={<ManageCustomer />} />
         <Route path="/admin/customer-banner" element={<AppBanner />} />
+      </Route>
+
+      {/* Shared routes for admin and TeamLeader */}
+      <Route element={<ProtectedRoute allowedRoles={["admin", "TeamLeader"]} />}>
         <Route
           path="/admin/manage-additional-call"
           element={<ManageAdditionalCall />}
@@ -109,7 +116,7 @@ function App() {
       </Route>
 
       {/* teamleader */}
-      <Route element={<ProtectedRoute allowedRole="TeamLeader" />}>
+      <Route element={<ProtectedRoute allowedRoles="TeamLeader" />}>
         <Route
           path="/teamleader/dashboard/:teamleaderId"
           element={<TeamleaderDashboard />}

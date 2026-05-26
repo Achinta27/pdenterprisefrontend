@@ -6,7 +6,10 @@ const TeamleaderSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const location = useLocation();
-  const { teamleaderId } = useParams();
+  let { teamleaderId } = useParams();
+  if (!teamleaderId) {
+    teamleaderId = localStorage.getItem("teamleaderId");
+  }
 
   const sideheader = [
     {
@@ -18,6 +21,19 @@ const TeamleaderSideHeader = ({ isMobileSidebarOpen, closeMobileSidebar }) => {
       icon: "/images/lead.svg",
       name: "Add Call Entry",
       link: `/teamleader/add-calldetails/${teamleaderId}`,
+    },
+    {
+      icon: "/images/solution.svg",
+      name: "Smart Solution",
+      link: "/admin/manage-additional-call",
+    },
+    {
+      icon: "/images/user.svg",
+      name: "Dealer Management",
+      links: [
+        { name: "Manage Dealers", link: "/admin/dealers" },
+        { name: "Dealer Calls", link: "/admin/dealer-calls" },
+      ],
     },
   ];
 

@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
-import { HiViewGrid } from "react-icons/hi";
-import { IoNotificationsSharp, IoSearchSharp } from "react-icons/io5";
+import { useEffect, useState, useRef } from "react";
 import { TfiMenuAlt } from "react-icons/tfi";
 import { IoIosLogOut } from "react-icons/io";
-import { useNavigate, useParams } from "react-router-dom";
-import { AiOutlineClose } from "react-icons/ai"; // Import close icon
+import { useParams } from "react-router-dom";
+import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
 
 const TeamleaderHeader = ({
@@ -27,13 +25,16 @@ const TeamleaderHeader = ({
 
   const [userName, setUserName] = useState("");
 
-  const { teamleaderId } = useParams();
+  let { teamleaderId } = useParams();
+  if (!teamleaderId) {
+    teamleaderId = localStorage.getItem("teamleaderId");
+  }
 
   useEffect(() => {
     const fetchteamleader = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/teamleader/${teamleaderId}`
+          `${import.meta.env.VITE_BASE_URL}/api/teamleader/${teamleaderId}`,
         );
 
         setUserName(response.data);

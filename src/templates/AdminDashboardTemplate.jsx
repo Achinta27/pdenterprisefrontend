@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import AdminHeader from "../component/AdminHeader";
 import AdminSideHeader from "../component/AdminSideHeader";
+import TeamleaderHeader from "../component/teamleader/TeamleaderHeader";
+import TeamleaderSideHeader from "../component/teamleader/TeamleaderSideHeader";
+import { AuthContext } from "../context/AuthContext";
 
 const AdminDashboardTemplate = ({ children }) => {
+  const { user } = useContext(AuthContext);
   const [isTokenVerified, setIsTokenVerified] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [hideHeader, setHideHeader] = useState(false);
@@ -39,18 +43,33 @@ const AdminDashboardTemplate = ({ children }) => {
   return (
     <div className="flex flex-col w-full h-full bg-white overflow-hidden">
       <div>
-        <AdminHeader
-          toggleMobileSidebar={toggleMobileSidebar}
-          isMobileSidebarOpen={isMobileSidebarOpen}
-          hideHeader={hideHeader}
-        />
+        {user?.role === "TeamLeader" ? (
+          <TeamleaderHeader
+            toggleMobileSidebar={toggleMobileSidebar}
+            isMobileSidebarOpen={isMobileSidebarOpen}
+            hideHeader={hideHeader}
+          />
+        ) : (
+          <AdminHeader
+            toggleMobileSidebar={toggleMobileSidebar}
+            isMobileSidebarOpen={isMobileSidebarOpen}
+            hideHeader={hideHeader}
+          />
+        )}
       </div>
 
       <div className="flex flex-row h-screen sm:w-full relative">
-        <AdminSideHeader
-          isMobileSidebarOpen={isMobileSidebarOpen}
-          closeMobileSidebar={closeMobileSidebar}
-        />
+        {user?.role === "TeamLeader" ? (
+          <TeamleaderSideHeader
+            isMobileSidebarOpen={isMobileSidebarOpen}
+            closeMobileSidebar={closeMobileSidebar}
+          />
+        ) : (
+          <AdminSideHeader
+            isMobileSidebarOpen={isMobileSidebarOpen}
+            closeMobileSidebar={closeMobileSidebar}
+          />
+        )}
         <div className="w-full p-4 overflow-auto no-scrollbar xlg:ml-[8rem] ml-[5rem] xl:ml-[10rem]">
           {children}
         </div>
