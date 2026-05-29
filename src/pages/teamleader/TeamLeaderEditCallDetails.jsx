@@ -19,6 +19,7 @@ const TeamLeaderEditCallDetails = () => {
     contactNumber: "",
     whatsappNumber: "",
     engineer: "",
+    dealer: "",
     productsName: "",
     warrantyTerms: "",
     TAT: "",
@@ -52,6 +53,7 @@ const TeamLeaderEditCallDetails = () => {
   const [message, setMessage] = useState("");
   const [brands, setBrands] = useState([]);
   const [engineers, setEngineers] = useState([]);
+  const [dealers, setDealers] = useState([]);
   const [products, setProducts] = useState([]);
   const [warranties, setWarranties] = useState([]);
   const [services, setServices] = useState([]);
@@ -68,6 +70,7 @@ const TeamLeaderEditCallDetails = () => {
       const [
         brandRes,
         engineerRes,
+        dealerRes,
         productRes,
         warrantyRes,
         serviceRes,
@@ -75,6 +78,7 @@ const TeamLeaderEditCallDetails = () => {
       ] = await Promise.all([
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/brandsadd/get`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/enginnerdetails/get`),
+        axios.get(`${import.meta.env.VITE_BASE_URL}/api/dealer/get-all`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/productsadd/get`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/warrantytype/get`),
         axios.get(`${import.meta.env.VITE_BASE_URL}/api/servicetype/get`),
@@ -83,6 +87,7 @@ const TeamLeaderEditCallDetails = () => {
 
       setBrands(brandRes.data);
       setEngineers(engineerRes.data);
+      setDealers(dealerRes.data.dealers || []);
       setProducts(productRes.data);
       setWarranties(warrantyRes.data);
       setServices(serviceRes.data);
@@ -120,6 +125,7 @@ const TeamLeaderEditCallDetails = () => {
         contactNumber: callDetail.contactNumber,
         whatsappNumber: callDetail.whatsappNumber,
         engineer: callDetail.engineer ? callDetail.engineer._id : "",
+        dealer: callDetail.dealer ? callDetail.dealer._id : "",
         productsName: callDetail.productsName,
         warrantyTerms: callDetail.warrantyTerms,
         TAT: callDetail.TAT,
@@ -587,6 +593,23 @@ const TeamLeaderEditCallDetails = () => {
               ))}
             </select>
             {errors.engineer && <p className="form-error">{errors.engineer}</p>}
+          </div>
+
+          <div>
+            <label className="form-label">Dealer</label>
+            <select
+              name="dealer"
+              value={formData.dealer}
+              onChange={handleInputChange}
+              className="form-input"
+            >
+              <option value="">Select Dealer</option>
+              {dealers.map((dealer) => (
+                <option key={dealer._id} value={dealer._id}>
+                  {dealer.name} ({dealer.dealerCode})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

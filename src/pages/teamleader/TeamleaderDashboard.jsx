@@ -18,6 +18,7 @@ import { MdFileCopy } from "react-icons/md";
 import ExcelExport from "../../component/ExcelExport";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { BiSolidDuplicate } from "react-icons/bi";
+import HistoryTimeline from "../../component/HistoryTimeline";
 import Select from "react-select";
 
 const TeamleaderDashboard = () => {
@@ -614,6 +615,7 @@ const TeamleaderDashboard = () => {
     { name: "C. Name", column: "customerName" },
     { name: "Mobile No" },
     { name: "Route", column: "route" },
+    { name: "Dealer" },
     { name: "Product" },
     { name: "Warranty" },
     { name: "Status" },
@@ -1146,6 +1148,11 @@ const TeamleaderDashboard = () => {
                     </div>
                     <div className="flex-1 break-all">{detail.route}</div>
                     <div className="flex-1 break-all">
+                      {detail.dealer?.name
+                        ? `${detail.dealer.name} (${detail.dealer.dealerCode || detail.dealer.dealerId})`
+                        : "N/A"}
+                    </div>
+                    <div className="flex-1 break-all">
                       {detail.productsName}
                     </div>
                     <div className="flex-1 break-words">
@@ -1247,6 +1254,7 @@ const TeamleaderDashboard = () => {
                   </p>
                 ))}
               </div>
+              <HistoryTimeline history={selectedCallDetail.history} />
             </div>
           </div>
         )}
